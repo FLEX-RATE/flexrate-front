@@ -5,7 +5,11 @@
 'use client';
 import React, { useState } from 'react';
 
-export const Birthday: React.FC<{ onNext: (birthday: string) => void }> = ({ onNext }) => {
+interface BirthdayProps {
+  onNext: (birthday: string) => void;
+}
+
+const Birthday = ({ onNext }: BirthdayProps) => {
   const [birthday, setBirthday] = useState('');
 
   const handleNext = () => {
@@ -33,3 +37,4 @@ export const Birthday: React.FC<{ onNext: (birthday: string) => void }> = ({ onN
 };
 
 export default Birthday;
+

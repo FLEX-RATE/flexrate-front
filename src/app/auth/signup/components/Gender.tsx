@@ -5,7 +5,11 @@
 'use client';
 import React, { useState } from 'react';
 
-export const Gender: React.FC<{ onNext: (gender: string) => void }> = ({ onNext }) => {
+interface GenderProps {
+  onNext: (gender: string) => void;
+}
+
+const Gender = ({ onNext }: GenderProps) => {
   const [selectedGender, setSelectedGender] = useState<string | null>(null);
 
   const handleNext = (gender: string) => {

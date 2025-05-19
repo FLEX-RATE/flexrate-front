@@ -1,4 +1,8 @@
-// pages/login/simple.tsx (혹은 해당 Funnel 단계 컴포넌트)
+// simple.tsx (간편 비밀번호 컴포넌트)
+// @author 윤영찬
+// @since 2025-05-13
+
+
 import SimplePasswordPad from '../../components/signup/SimplePasswordSetup';
 import { simpleLogin } from '@/apis/auth';
 import { useUserStore } from '@/stores/userStore';

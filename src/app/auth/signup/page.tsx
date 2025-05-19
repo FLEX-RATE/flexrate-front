@@ -1,16 +1,22 @@
 'use client';
 import React from 'react';
+
 import { useFunnel } from '@use-funnel/browser';
 
-import SignupPassword from './components/SignupPassword';
-import SignupMethodSelector from './components/SignupMethodSelector';
-import Agreement from './components/Agreement';
-import { Wrapper } from '@/components/loanApplicationFunnel/LoanApplicationFunnel.style';
 import Header from '@/components/Header/Header';
+import { Wrapper } from '@/components/loanApplicationFunnel/LoanApplicationFunnel.style';
 import EmailForm from '@/components/signup/EmailForm/EmailForm';
 import InfoForm from '@/components/signup/InfoForm/InfoForm';
-import ConsumptionResult from '../../../components/signup/ConsumptionResult/ConsumptionResult';
+import { useModal } from '@/hooks/useModal'
+
 import ConsumptionGoal from '../../../components/signup/ConsumptionGoal/ConsumptionGoal';
+import ConsumptionResult from '../../../components/signup/ConsumptionResult/ConsumptionResult';
+import { SignupMethodSelectorModal } from '../signup/components/modals/SignupMethodSelectorModal';
+
+// import Agreement from './components/Agreement/Agreement';
+// import SignupMethodSelector from './components/SignupMethodSelector';
+
+import SignupPassword from './components/SignupPassword';
 
 
 export type SignupSteps = {
@@ -56,7 +62,7 @@ export type SignupSteps = {
   };
 };
 
-export default function SignupPage() {
+const SignupPage = () => {
   const funnel = useFunnel<SignupSteps>({
     id: 'signup',
     initial: { step: '이메일인증', context: { email: '' } },
@@ -88,8 +94,9 @@ export default function SignupPage() {
         })}
         로그인수단설정={funnel.Render.with({
           render: ({ context }) => (
-            <SignupMethodSelector
-              onSelect={(method: string) =>
+            <SignupMethodSelectorModal
+              context={context}
+              onSelectNextStep={(method) =>
                 funnel.history.push('내정보설정', (prev) => ({ ...prev, ...context, method }))
               }
             />
@@ -142,3 +149,5 @@ export default function SignupPage() {
     </Wrapper>
   );
 }
+
+export default SignupPage;

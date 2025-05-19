@@ -2,21 +2,25 @@
 // @author 윤영찬
 // @since 2025-05-13
 
-import React, { useState } from 'react'
+'use client';
 
-export const SignupEmailVerify: React.FC<{
-  defaultEmail: string
-  onVerify: (context: { email: string; verificationCode: string }) => void
-}> = ({ defaultEmail, onVerify }) => {
-  const [verificationCode, setVerificationCode] = useState('')
+import React, { useState } from 'react';
+
+interface SignupEmailVerifyProps {
+  defaultEmail: string;
+  onVerify: (context: { email: string; verificationCode: string }) => void;
+}
+
+const SignupEmailVerify = ({ defaultEmail, onVerify }: SignupEmailVerifyProps) => {
+  const [verificationCode, setVerificationCode] = useState('');
 
   const handleVerify = () => {
     if (!verificationCode.trim()) {
-      alert('인증번호를 입력해주세요.')
-      return
+      alert('인증번호를 입력해주세요.');
+      return;
     }
-    onVerify({ email: defaultEmail, verificationCode })
-  }
+    onVerify({ email: defaultEmail, verificationCode: verificationCode.trim() });
+  };
 
   return (
     <div className="p-4 flex flex-col items-center">
@@ -34,11 +38,14 @@ export const SignupEmailVerify: React.FC<{
         placeholder="인증번호 입력"
         className="w-full p-3 border rounded mb-4"
       />
-      <button onClick={handleVerify} className="w-full p-4 bg-blue-500 text-white rounded">
+      <button
+        onClick={handleVerify}
+        className="w-full p-4 bg-blue-500 text-white rounded"
+      >
         인증하기
       </button>
     </div>
-  )
-}
+  );
+};
 
-export default SignupEmailVerify
+export default SignupEmailVerify;
