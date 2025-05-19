@@ -9,6 +9,9 @@ import { Wrapper } from '@/components/loanApplicationFunnel/LoanApplicationFunne
 import Header from '@/components/Header/Header';
 import EmailForm from '@/components/signup/EmailForm/EmailForm';
 import InfoForm from '@/components/signup/InfoForm/InfoForm';
+import ConsumptionResult from '../../../components/signup/ConsumptionResult/ConsumptionResult';
+import ConsumptionGoal from '../../../components/signup/ConsumptionGoal/ConsumptionGoal';
+
 
 export type SignupSteps = {
   이메일인증: { email?: string; verifyPassword?: number };
@@ -87,7 +90,7 @@ export default function SignupPage() {
           render: ({ context }) => (
             <SignupMethodSelector
               onSelect={(method: string) =>
-                funnel.history.push('내정보설정', (prev) => ({ ...prev, ...context, method: '' }))
+                funnel.history.push('내정보설정', (prev) => ({ ...prev, ...context, method }))
               }
             />
           ),
@@ -116,22 +119,23 @@ export default function SignupPage() {
         })}
         소비성향결과={funnel.Render.with({
           render: ({ context }) => (
-            <></>
-            // <ConsumptionResult
-            //   onNext={() =>
-            //     funnel.history.push('소비목적결과', (prev) => ({
-            //       ...prev,
-            //       ...context,
-            //       consumptionGoal: '',
-            //     }))
-            //   }
-            // />
+            <ConsumptionResult
+              onNext={() =>
+                funnel.history.push('소비목적결과', (prev) => ({
+                  ...prev,
+                  ...context,
+                  consumptionGoal: '',
+                }))
+              }
+            />
           ),
         })}
+
         소비목적결과={funnel.Render.with({
           render: ({ context }) => (
-            <></>
-            // <ConsumptionGoal onComplete={() => console.log('회원가입 완료', context)} />
+            <ConsumptionGoal
+              onComplete={() => console.log('회원가입 완료', context)}
+            />
           ),
         })}
       />

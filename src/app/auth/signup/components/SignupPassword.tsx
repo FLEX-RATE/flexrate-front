@@ -3,50 +3,91 @@
 // @since 2025-05-13
 
 'use client'
-import React, { useState } from 'react'
+
+import { zodResolver } from '@hookform/resolvers/zod'
+import { Controller, useForm } from 'react-hook-form'
+import { z } from 'zod'
+
+import Button from '@/components/Button/Button'
+import TextField from '@/components/TextField/TextField'
+import { authSchemas } from '@/schemas/auth.schema'
+
 import {
   Container,
   Title,
   FormContainer,
   BtnContainer,
-} from '../../../../components/signup/EmailForm/EmailForm.style' // 경로 맞게 수정
+} from './SignupPassword.style'
 
-export const SignupPassword: React.FC<{ email: string; onNext: (pw: string) => void }> = ({ email, onNext }) => {
-  const [password, setPassword] = useState('')
+interface SignupPasswordProps {
+  email: string
+  onNext: (pw: string) => void
+}
 
-  const handleNext = (e: React.FormEvent) => {
+type FormData = z.infer<typeof authSchemas.passwordOnly>
+
+export const SignupPassword = ({ email, onNext }: SignupPasswordProps) => {
+  const {
+    control,
+    trigger,
+    watch,
+    formState: { errors, dirtyFields },
+  } = useForm<FormData>({
+    resolver: zodResolver(authSchemas.passwordOnly),
+    mode: 'onChange',
+    defaultValues: {
+      password: '',
+    },
+  })
+
+  const password = watch('password')
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!password) {
-      alert('비밀번호를 입력해주세요.')
-      return
-    }
+    const isValid = await trigger()
+    if (!isValid) return
+
     onNext(password)
   }
 
   return (
     <Container>
       <Title>비밀번호 설정</Title>
-      <FormContainer onSubmit={handleNext}>
-        <input
-          type="password"
-          placeholder="비밀번호 입력"
-          className="w-full p-3 border rounded mb-2"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
+
+      <FormContainer onSubmit={handleSubmit}>
+        <Controller
+          name="password"
+          control={control}
+          render={({ field }) => (
+            <TextField
+              value={field.value}
+              onChange={field.onChange}
+              isError={!!errors.password}
+              rightContent={{ type: 'DELETE', onClick: () => field.onChange('') }}
+            >
+              <TextField.TextFieldBox
+                type="password"
+                placeholder="비밀번호 입력"
+              />
+              <TextField.ErrorText message={errors.password?.message ?? ''} />
+            </TextField>
+          )}
         />
-        <input
-          type="text"
-          value={email}
-          readOnly
-          className="w-full p-3 border rounded mb-4 bg-gray-100"
-        />
+
+        <TextField value={email} onChange={() => {}} isDisabled>
+          <TextField.TextFieldBox
+            type="text"
+            placeholder="이메일"
+            // readOnly 제거: 타입에 없으므로 오류 발생
+          />
+        </TextField>
+
         <BtnContainer>
-          <button
+          <Button
             type="submit"
-            className="w-full p-4 bg-blue-500 text-white rounded"
-          >
-            다음으로
-          </button>
+            text="다음으로"
+            disabled={!dirtyFields.password || !!errors.password}
+          />
         </BtnContainer>
       </FormContainer>
     </Container>

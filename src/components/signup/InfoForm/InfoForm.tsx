@@ -1,14 +1,17 @@
-'use client';
+'use client'
 
-import { Controller, useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import TextField from '@/components/TextField/TextField';
-import Button from '@/components/Button/Button';
+import React from 'react'
+
+import { zodResolver } from '@hookform/resolvers/zod'
+import { Controller, useForm } from 'react-hook-form'
+import { z } from 'zod'
+
+import Button from '@/components/Button/Button'
+import TextField from '@/components/TextField/TextField'
 
 export type LoginSelectorProps = {
-  onNext: (info: { gender: string; birthDate: string; name: string }) => void;
-};
+  onNext: (info: { gender: string; birthDate: string; name: string }) => void
+}
 
 // 스키마 정의
 const schema = z.object({
@@ -17,11 +20,11 @@ const schema = z.object({
   birthDate: z
     .string()
     .regex(/^\d{4}-\d{2}-\d{2}$/, '생년월일 형식이 올바르지 않습니다.'),
-});
+})
 
-type FormData = z.infer<typeof schema>;
+type FormData = z.infer<typeof schema>
 
-export default function InfoForm({ onNext }: LoginSelectorProps) {
+const InfoForm = ({ onNext }: LoginSelectorProps) => {
   const {
     control,
     handleSubmit,
@@ -34,11 +37,11 @@ export default function InfoForm({ onNext }: LoginSelectorProps) {
       gender: 'FEMALE',
       birthDate: '',
     },
-  });
+  })
 
   const onSubmit = (data: FormData) => {
-    onNext(data);
-  };
+    onNext(data)
+  }
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 p-4">
@@ -47,14 +50,8 @@ export default function InfoForm({ onNext }: LoginSelectorProps) {
         name="name"
         control={control}
         render={({ field }) => (
-          <TextField
-            value={field.value}
-            onChange={field.onChange}
-            isError={!!errors.name}
-          >
-            <TextField.TextFieldBox
-            placeholder="이름 입력"
-            />
+          <TextField value={field.value} onChange={field.onChange} isError={!!errors.name}>
+            <TextField.TextFieldBox placeholder="이름 입력" />
             <TextField.ErrorText message={errors.name?.message ?? ''} />
           </TextField>
         )}
@@ -66,10 +63,7 @@ export default function InfoForm({ onNext }: LoginSelectorProps) {
         control={control}
         render={({ field }) => (
           <div className="space-y-1">
-            <select
-              {...field}
-              className="w-full p-2 border rounded text-sm"
-            >
+            <select {...field} className="w-full p-2 border rounded text-sm">
               <option value="MALE">남성</option>
               <option value="FEMALE">여성</option>
             </select>
@@ -85,16 +79,8 @@ export default function InfoForm({ onNext }: LoginSelectorProps) {
         name="birthDate"
         control={control}
         render={({ field }) => (
-          <TextField
-            value={field.value}
-            onChange={field.onChange}
-            isError={!!errors.birthDate}
-            
-          >
-            <TextField.TextFieldBox 
-            type="date" 
-            placeholder="생년월일 (YYYY-MM-DD)"
-            />
+          <TextField value={field.value} onChange={field.onChange} isError={!!errors.birthDate}>
+            <TextField.TextFieldBox type="date" placeholder="생년월일 (YYYY-MM-DD)" />
             <TextField.ErrorText message={errors.birthDate?.message ?? ''} />
           </TextField>
         )}
@@ -103,5 +89,7 @@ export default function InfoForm({ onNext }: LoginSelectorProps) {
       {/* 제출 버튼 */}
       <Button type="submit" text="다음" disabled={!isValid} />
     </form>
-  );
+  )
 }
+
+export default InfoForm

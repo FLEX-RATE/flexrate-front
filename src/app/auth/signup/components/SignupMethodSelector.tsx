@@ -3,16 +3,40 @@
 // @since 2025-05-13
 
 'use client'
+
 import React from 'react'
+
 import { SignupContextMap } from '../types/signup'
 
-export const SignupMethodSelector: React.FC<{ onSelect: (method: SignupContextMap['method']['method']) => void }> = ({ onSelect }) => (
-  <div className="p-4 flex flex-col items-center">
-    <h2 className="text-2xl font-bold mb-4">인증 방법 선택</h2>
-    <button onClick={() => onSelect('passkey')} className="w-full p-3 bg-gray-200 rounded mb-2">Passkey</button>
-    <button onClick={() => onSelect('faceid')} className="w-full p-3 bg-gray-200 rounded mb-2">FACE ID</button>
-    <button onClick={() => onSelect('pin')} className="w-full p-3 bg-gray-200 rounded">간편 비밀번호</button>
-  </div>
-)
+import {
+  Container,
+  Title,
+  ButtonGroup,
+  SelectButton,
+} from './SignupMethodSelector.style'
+
+interface SignupMethodSelectorProps {
+  onSelect: (method: SignupContextMap['method']['method']) => void
+}
+
+export const SignupMethodSelector = ({ onSelect }: SignupMethodSelectorProps) => {
+  return (
+    <Container>
+      <Title>어떤 방법으로 로그인할까요?</Title>
+
+      <ButtonGroup>
+        <SelectButton type="button" onClick={() => onSelect('pin')}>
+          간편 비밀번호
+        </SelectButton>
+        <SelectButton type="button" onClick={() => onSelect('faceid')}>
+          지문
+        </SelectButton>
+        <SelectButton type="button" onClick={() => onSelect('pin')}>
+          일반 로그인
+        </SelectButton>
+      </ButtonGroup>
+    </Container>
+  )
+}
 
 export default SignupMethodSelector
