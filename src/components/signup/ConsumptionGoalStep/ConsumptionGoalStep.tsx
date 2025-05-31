@@ -27,8 +27,11 @@ const ConsumptionGoalStep = ({
           birthDate: context.birthDate,
           consumptionType: context.consumptionType as ConsumptionType,
           consumeGoal: selectedGoal,
+          ...(context.pin ? { pin: context.pin } : {}),
         };
 
+        console.log('최종 회원가입 데이터:', signupData);
+        
         signupMutation.mutate(signupData);
       }}
     />

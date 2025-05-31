@@ -6,12 +6,12 @@ export type SignupSteps = {
   간편비밀번호설정: {
     email: string;
     password: string;
-    method: '간편비밀번호';
+    pin?: string;
   };
   내정보입력: {
     email: string;
     password: string;
-    method: string;
+    pin: string;
     sex?: string;
     birthDate?: string;
     name?: string;
@@ -20,7 +20,7 @@ export type SignupSteps = {
   소비성향체크: {
     email: string;
     password: string;
-    method: string;
+    pin: string;
     sex: string;
     birthDate: string;
     name: string;
@@ -29,7 +29,7 @@ export type SignupSteps = {
   소비성향결과: {
     email: string;
     password: string;
-    method: string;
+    pin: string;
     sex: string;
     birthDate: string;
     name: string;
@@ -39,7 +39,7 @@ export type SignupSteps = {
   소비목적결과: {
     email: string;
     password: string;
-    method: string;
+    pin: string;
     sex: string;
     birthDate: string;
     name: string;

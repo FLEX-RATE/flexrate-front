@@ -8,7 +8,13 @@ export const usePostSignup = () => {
 
   return useMutation({
     mutationFn: postSignupUser,
-    onSuccess: () => {
+    onSuccess: (data) => {
+      if (data?.accessToken) {
+        localStorage.setItem('accessToken', data.accessToken);
+        console.log('로컬스토리지에 저장됨:', data.accessToken);
+      } else {
+        console.warn('회원가입 응답에 엑세스토큰이 없습니다.');
+      }
       router.push('/auth/login');
     },
     onError: (error) => {

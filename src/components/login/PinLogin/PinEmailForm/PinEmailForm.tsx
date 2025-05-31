@@ -13,11 +13,11 @@ import { useEmailVerification } from '@/hooks/useEmailVerification';
 import { useVerifyEmailCode } from '@/hooks/useVerifyEmailCode';
 import { authSchemas } from '@/schemas/auth.schema';
 
-import { BtnContainer, Container, FormContainer, Title } from './PinEmailVerification.style';
+import { BtnContainer, Container, FormContainer, Title } from './PinEmailForm.style';
 
 type FormData = z.infer<typeof authSchemas.emailWithCode>;
 
-const PinEmailVerification = ({ onVerified }: { onVerified: () => void }) => {
+const PinEmailForm = ({ onVerified }: { onVerified: (email: string) => void }) => {
   const [timer, setTimer] = useState(0);
   const [intervalId, setIntervalId] = useState<NodeJS.Timeout | null>(null);
 
@@ -39,11 +39,12 @@ const PinEmailVerification = ({ onVerified }: { onVerified: () => void }) => {
   const code = watch('code');
 
   const { requestCode, codeSent, setCodeSent } = useEmailVerification();
-  const verifyMutation = useVerifyEmailCode(() => onVerified());
+  const verifyMutation = useVerifyEmailCode(onVerified);
 
   const handleVerify = async () => {
-    const isValid = await trigger('code');
-    if (!isValid) return;
+    const isCodeValid = await trigger('code');
+    if (!isCodeValid) return;
+
     verifyMutation.mutate({ email, code });
   };
 
@@ -60,7 +61,7 @@ const PinEmailVerification = ({ onVerified }: { onVerified: () => void }) => {
       }, 1000);
       setIntervalId(id);
     }
-  }, [timer]);
+  }, [timer, intervalId]);
 
   const formatTime = (sec: number) => {
     const m = String(Math.floor(sec / 60)).padStart(2, '0');
@@ -70,6 +71,7 @@ const PinEmailVerification = ({ onVerified }: { onVerified: () => void }) => {
 
   const handleRequestCode = async () => {
     setCodeSent(true);
+
     const isValid = await trigger('email');
     if (isValid) {
       requestCode(email);
@@ -80,9 +82,9 @@ const PinEmailVerification = ({ onVerified }: { onVerified: () => void }) => {
   return (
     <Container>
       <Title>
-        본인 확인을 위해
+        PIN 등록 전에
         <br />
-        이메일 인증을 진행해주세요
+        이메일 인증이 필요합니다
       </Title>
 
       <FormContainer>
@@ -152,4 +154,4 @@ const PinEmailVerification = ({ onVerified }: { onVerified: () => void }) => {
   );
 };
 
-export default PinEmailVerification;
+export default PinEmailForm;

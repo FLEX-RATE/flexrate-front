@@ -2,7 +2,9 @@
 import React from 'react';
 
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 
+import { checkPinRegistered } from '@/apis/auth'; 
 import BottomSheet from '@/components/BottomSheet/BottomSheet';
 
 import {
@@ -14,13 +16,43 @@ import {
   Title,
 } from './LoginSelector.style';
 
-export type LoginSelectorProps = {
+// API 호출 함수 임포트 위치에 맞게 수정 필요
+
+type LoginSelectorProps = {
   onSelectPassword: () => void;
   onSelectFace: () => void;
   onSelectPin: () => void;
 };
 
-const LoginSelector = ({ onSelectFace, onSelectPassword, onSelectPin }: LoginSelectorProps) => {
+const LoginSelector = ({
+  onSelectFace,
+  onSelectPassword,
+}: LoginSelectorProps) => {
+  const router = useRouter();
+
+const handleSelectPin = async () => {
+  const accessToken = localStorage.getItem('accessToken');
+  if (!accessToken) {
+    alert('로그인이 필요합니다.');
+    router.push('/auth/login');
+    return;
+  }
+
+  try {
+    const data = await checkPinRegistered();
+    console.log('PIN 등록 여부 API 응답:', data);  // true 또는 false
+
+  if (data) {
+    router.push('/pin/login');
+  } else {
+    router.push('/pin/register');
+  }
+  } catch (error) {
+    console.error('PIN 확인 실패:', error);
+    alert('오류가 발생했습니다.');
+  }
+};
+
   return (
     <Container>
       <Title>
@@ -31,7 +63,7 @@ const LoginSelector = ({ onSelectFace, onSelectPassword, onSelectPin }: LoginSel
       <BottomSheet isOpen={true}>
         <Question>어떤 방법으로 로그인할까요?</Question>
         <BtnWrapper>
-          <SheetBtn onClick={onSelectPin}>
+          <SheetBtn onClick={handleSelectPin}>
             <BtnContainer>
               <Image src={'/imgs/lock.svg'} width={36} height={36} alt="간편 비밀번호" />
               간편 비밀번호

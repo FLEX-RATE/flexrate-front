@@ -4,11 +4,11 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
+import { SubContainer } from "@/app/mypage/page.style";
 import Button from "@/components/Button/Button";
 import { BtnContainer, BtnWrapper } from "@/components/MypageEditFunnel/EmailStep/EmailStep.style";
 import { Title, MainContainer } from "@/components/MypageEditFunnel/MypageEditFunnel.style";
 import TextField from "@/components/TextField/TextField";
-import { SubContainer } from "@/app/mypage/page.style";
 
 interface Props {
   value: { email: string; code: string };
