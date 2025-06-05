@@ -48,6 +48,9 @@ const LoginSelector = ({  onSelectPassword }: LoginSelectorProps) => {
 
 const handleSelectFinger = async () => {
   try {
+
+    console.log('현재 user 상태:', user);
+    console.log('user.email:', user?.email);
     if (!user?.email) {
       alert('사용자 정보가 없습니다. 다시 로그인해주세요.');
       router.push('/login'); // 로그인 페이지 경로에 맞게 수정

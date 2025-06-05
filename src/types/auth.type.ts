@@ -73,18 +73,26 @@ export interface PasskeyAuthentication {
 }
 
 export interface PasskeyRequest {
-  credentialId: string;      // Base64url 인코딩된 credential ID
-  publicKey: string;         // PEM 형식 공개키
-  signCount: number;         // signcount 서명 횟수
-  deviceInfo: string;        // 디바이스 장치 접속 정보
-  authenticatorData: string; // Base64url 인코딩된 authenticatorData
-  clientDataJSON: string;    // Base64url 인코딩된 clientDataJSON
-  signature: string;         // Base64url 인코딩된 서명
+  credentialId: string;
+  clientDataJSON: string;
+  attestationObject: string;
+  email?: string;
+  deviceInfo: string;
 }
 
 export interface PasskeyLoginChallengeRequest {
-  email: string;             // 이메일 (필수입력!)
+  email: string;
 }
+
+export interface PasskeyRegisterRequest {
+  credentialId: string;
+  clientDataJSON: string;
+  attestationObject: string;
+  email?: string;
+  deviceInfo: string;
+}
+
+
 
 export interface PasskeyLoginChallengeResponse {
   challenge: string;

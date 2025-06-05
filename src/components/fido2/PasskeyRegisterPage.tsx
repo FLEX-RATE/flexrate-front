@@ -1,100 +1,90 @@
-// components/PasskeyRegisterPage.tsx (클라이언트 컴포넌트)
 'use client';
 
-import React, { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { useRouter } from 'next/navigation';
 
-import { getFido2RegisterChallenge, verifyFido2Register } from '@/apis/auth';
+import {
+  getFido2RegisterChallenge,
+  verifyFido2Register,
+} from '@/apis/auth'; // 서버 API 함수
+import { useUserStore } from '@/stores/userStore';
 import { base64ToArrayBuffer, arrayBufferToBase64 } from '@/utils/encoding';
 
-type Props = {
-  memberId: number;
-};
-
-const PasskeyRegisterPage = ({ memberId }: Props) => {
+const Fido2RegisterPage = () => {
+  const [loading, setLoading] = useState(false);
+  const user = useUserStore((state) => state.user);
   const router = useRouter();
-  const [error, setError] = useState<string | null>(null);
 
-  const handleRegisterPasskey = async () => {
-    console.log('패스키 등록 시작 - memberId:', memberId);
-
+    const registerPasskey = async () => {
     try {
-      // 1. 서버에서 challenge 받아오기
-      const challengeStr = await getFido2RegisterChallenge(memberId);
-      console.log('서버에서 받은 challenge:', challengeStr);
+        setLoading(true);
 
-      const challenge = base64ToArrayBuffer(challengeStr);
+        if (!user?.email) {
+        alert('사용자 정보를 불러올 수 없습니다. 로그인해주세요.');
+        router.push('/auth/login');
+        return;
+        }
 
-      // 2. 패스키 생성 요청
-      const publicKey: PublicKeyCredentialCreationOptions = {
-        challenge,
-        rp: {
-          name: 'Flexrate',
-          id: window.location.hostname,
-        },
+        // 서버에서 등록용 challenge 및 옵션 받아오기
+        const challengeResponse = await getFido2RegisterChallenge();
+
+        const publicKeyOptions: PublicKeyCredentialCreationOptions = {
+        challenge: base64ToArrayBuffer(challengeResponse.challenge),
+        rp: challengeResponse.rp,
         user: {
-          id: new TextEncoder().encode(String(memberId)),
-          name: `user-${memberId}`,
-          displayName: `User ${memberId}`,
+            id: base64ToArrayBuffer(challengeResponse.user.id),
+            name: challengeResponse.user.name,
+            displayName: challengeResponse.user.displayName,
         },
-        pubKeyCredParams: [{ type: 'public-key', alg: -7 }],
-        authenticatorSelection: {
-          userVerification: 'required',
-          residentKey: 'preferred',
-          authenticatorAttachment: 'platform',
+        pubKeyCredParams: challengeResponse.pubKeyCredParams,
+        timeout: challengeResponse.timeout ?? 60000,
+        attestation: challengeResponse.attestation ?? 'none',
+        authenticatorSelection: challengeResponse.authenticatorSelection ?? {
+            userVerification: 'preferred',
         },
-        timeout: 60000,
-        attestation: 'none',
-      };
+        };
 
-      console.log('publicKey 옵션 준비 완료:', publicKey);
+        // 클라이언트에서 패스키 생성
+        const credential = (await navigator.credentials.create({
+        publicKey: publicKeyOptions,
+        })) as PublicKeyCredential;
 
-      const credential = (await navigator.credentials.create({
-        publicKey,
-      })) as PublicKeyCredential;
+        const attestation = credential.response as AuthenticatorAttestationResponse;
 
-      console.log('navigator.credentials.create 결과:', credential);
+        // 서버에 전송할 데이터 구성
+        const payload = {
+        credentialId: arrayBufferToBase64(credential.rawId),
+        clientDataJSON: arrayBufferToBase64(attestation.clientDataJSON),
+        attestationObject: arrayBufferToBase64(attestation.attestationObject),
+        email: user.email,
+        deviceInfo: window.navigator.userAgent,
+        };
 
-      const response = credential.response as AuthenticatorAttestationResponse;
+        // 서버에 검증 요청
+        await verifyFido2Register(payload);
 
-      // 3. 등록 정보 가공
-      const credentialId = arrayBufferToBase64(credential.rawId);
-      const clientDataJSON = arrayBufferToBase64(response.clientDataJSON);
-      const attestationObject = arrayBufferToBase64(response.attestationObject);
-
-      console.log('가공된 등록 정보:', { credentialId, clientDataJSON, attestationObject });
-
-      const passkeyData = {
-        credentialId,
-        publicKey: '', // 등록 시 서버에서 저장 안 하도록 구현돼 있으면 생략 가능
-        signCount: 0,
-        deviceInfo: navigator.userAgent,
-        authenticatorData: attestationObject,
-        clientDataJSON,
-        signature: '', // 등록에는 필요 없음
-      };
-
-      // 4. 서버에 검증 요청
-      const verifyResult = await verifyFido2Register(memberId, passkeyData);
-      console.log('서버 검증 결과:', verifyResult);
-
-      alert('패스키 등록 성공!');
-      router.push('/login'); // 등록 완료 후 라우팅
-
+        alert('지문 인증 등록이 완료되었습니다!');
+        router.push('/auth/login');
     } catch (err) {
-      console.error('패스키 등록 중 오류:', err);
-      setError('패스키 등록 중 오류가 발생했습니다.');
+        console.error('패스키 등록 실패:', err);
+        alert('패스키 등록에 실패했습니다.');
+    } finally {
+        setLoading(false);
     }
-  };
+    };
+
+
+  useEffect(() => {
+    registerPasskey();
+  }, []);
 
   return (
-    <div>
-      <h1>패스키 등록</h1>
-      <button onClick={handleRegisterPasskey}>등록 시작하기</button>
-      {error && <p style={{ color: 'red' }}>{error}</p>}
+    <div style={{ padding: '2rem' }}>
+      <h2>지문 인증 등록 중...</h2>
+      {loading && <p>잠시만 기다려주세요.</p>}
     </div>
   );
 };
 
-export default PasskeyRegisterPage;
+export default Fido2RegisterPage;
