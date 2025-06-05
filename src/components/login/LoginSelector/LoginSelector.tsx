@@ -4,8 +4,23 @@ import React from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 
-import { checkPinRegistered } from '@/apis/auth';
+
+
+import { loginWithPasskey,
+  checkPasskeyRegistered, 
+  // verifyFido2Register, 
+  // getFido2RegisterChallenge, 
+  getPasskeyLoginChallenge, 
+  // checkPinRegistered,
+ } from '@/apis/auth'
 import BottomSheet from '@/components/BottomSheet/BottomSheet';
+import { useUserStore } from '@/stores/userStore';
+import {
+  PasskeyAuthentication,
+  PasskeyLoginRequest,
+  // PasskeyLoginChallengeResponse,
+} from '@/types/auth.type';
+import { base64ToArrayBuffer, arrayBufferToBase64 } from '@/utils/encoding';
 
 import {
   BtnContainer,
@@ -18,35 +33,80 @@ import {
 
 type LoginSelectorProps = {
   onSelectPassword: () => void;
-  onSelectFace: () => void;
+  onSelectFinger: () => void;
 };
 
-const LoginSelector = ({ onSelectFace, onSelectPassword }: LoginSelectorProps) => {
+const LoginSelector = ({  onSelectPassword }: LoginSelectorProps) => {
   const router = useRouter();
+  const user = useUserStore((state) => state.user);
 
   const handleSelectPin = async () => {
 
     alert('간편 비밀번호 기능은 현재 개발 중입니다.');
-    
-    // const accessToken = localStorage.getItem('accessToken');
-    // if (!accessToken) {
-    //   alert('로그인이 필요합니다.');
-    //   router.push('/auth/login');
-    //   return;
-    // }
-
-    // try {
-    //   const data = await checkPinRegistered();
-    //   if (data) {
-    //     router.push('/pin/login');
-    //   } else {
-    //     router.push('/pin/register');
-    //   }
-    // } catch (error) {
-    //   console.error('PIN 확인 실패:', error);
-    //   alert('오류가 발생했습니다.');
-    // }
   };
+
+
+const handleSelectFinger = async () => {
+  try {
+    if (!user?.email) {
+      alert('사용자 정보가 없습니다. 다시 로그인해주세요.');
+      router.push('/login'); // 로그인 페이지 경로에 맞게 수정
+      return;
+    }
+
+    // 패스키 등록 여부 확인 (등록 안 되어 있으면 등록 페이지 이동)
+    const isRegistered = await checkPasskeyRegistered();
+    if (!isRegistered) {
+      alert('패스키가 등록되어 있지 않습니다. 등록 페이지로 이동합니다.');
+      router.push('/fido2/register');
+      return;
+    }
+
+    const challengeData = await getPasskeyLoginChallenge({ email: user.email });
+
+    const publicKeyCredentialRequestOptions: PublicKeyCredentialRequestOptions = {
+      challenge: base64ToArrayBuffer(challengeData.challenge),
+      rpId: challengeData.rpId,
+      allowCredentials: challengeData.allowedCredentialIds.map((credId) => ({
+        id: base64ToArrayBuffer(credId),
+        type: 'public-key',
+      })),
+      timeout: 60000,
+      userVerification: 'preferred',
+    };
+
+    const credential = (await navigator.credentials.get({
+      publicKey: publicKeyCredentialRequestOptions,
+    })) as PublicKeyCredential;
+
+    const assertionResponse = credential.response as AuthenticatorAssertionResponse;
+
+    const passkeyData: PasskeyAuthentication = {
+      credentialId: credential.id,
+      authenticatorData: arrayBufferToBase64(assertionResponse.authenticatorData),
+      clientDataJSON: arrayBufferToBase64(assertionResponse.clientDataJSON),
+      signature: arrayBufferToBase64(assertionResponse.signature),
+    };
+
+    const passkeyLoginRequest: PasskeyLoginRequest = {
+      email: user.email,
+      challenge: challengeData.challenge,
+      authMethod: 'PASSKEY', // enum 문자열로 교체
+      deviceInfo: navigator.userAgent,
+      passkeyData,
+    };
+
+    const response = await loginWithPasskey(passkeyLoginRequest);
+
+    console.log('로그인 성공:', response);
+    alert('로그인 성공!');
+    router.push('/');
+  } catch (error) {
+    console.error('지문 인증 실패:', error);
+    alert('지문 인증에 실패했습니다.');
+  }
+};
+
 
   return (
     <Container>
@@ -64,7 +124,7 @@ const LoginSelector = ({ onSelectFace, onSelectPassword }: LoginSelectorProps) =
               간편 비밀번호
             </BtnContainer>
           </SheetBtn>
-          <SheetBtn onClick={onSelectFace}>
+          <SheetBtn onClick={handleSelectFinger}>
             <BtnContainer>
               <Image src={'/icons/finger_36.svg'} width={36} height={36} alt="지문" />
               지문 인증

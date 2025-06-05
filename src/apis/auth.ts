@@ -9,6 +9,11 @@ import {
   SignupRequest,
   SignupResponse,
   VerifyEmailCodeRequest,
+  PasskeyRequest,
+  PasskeyLoginChallengeRequest,
+  PasskeyLoginChallengeResponse,
+  PasskeyRegisterChallengeResponse,
+  PasskeyLoginRequest
 } from '@/types/auth.type';
 
 import { apiClient } from './client';
@@ -134,5 +139,63 @@ export const verifyPin = async (pin: string): Promise<boolean> => {
       headers: { Authorization: `Bearer ${token}` },
     }
   );
+  return response.data;
+};
+
+
+
+// 패스키 관련 API 
+
+// 패스키 등록 여부 조회 API
+export const checkPasskeyRegistered = async (): Promise<boolean> => {
+  try {
+    const token = localStorage.getItem('accessToken');
+    if (!token) {
+      alert('로그인 토큰이 없습니다.');
+      return false;
+    }
+
+    const response = await apiClient.get('/api/auth/fido2/exists', {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.error('패스키 등록 여부 조회 실패: ', error);
+    return false;
+  }
+};
+
+ // FIDO2 패스키 등록용 챌린지 요청
+export const getFido2RegisterChallenge = async (): Promise<string> => {
+  const token = localStorage.getItem('accessToken');
+  if (!token) throw new Error('로그인 필요');
+
+  const response = await apiClient.get<string>(`/api/auth/fido2/register/options`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return response.data;
+};
+
+// FIDO2 패스키 등록 검증 API
+export const verifyFido2Register = async (data: PasskeyRequest): Promise<void> => {
+  const token = localStorage.getItem('accessToken');
+  if (!token) throw new Error('로그인 필요');
+
+  await apiClient.post(`/api/auth/fido2/register/verify`, data, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+};
+
+// 패스키 로그인 챌린지 요청
+export const getPasskeyLoginChallenge = async (data: PasskeyLoginChallengeRequest): Promise<PasskeyLoginChallengeResponse> => {
+  const response = await apiClient.post('/api/auth/login/passkey/options', data);
+  return response.data;
+};
+
+// 패스키 로그인 요청
+export const loginWithPasskey = async (data: PasskeyLoginRequest): Promise<LoginResponse> => {
+  const response = await apiClient.post('/api/auth/login/passkey', data);
   return response.data;
 };
