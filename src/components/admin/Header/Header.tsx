@@ -2,6 +2,7 @@ import Image from 'next/image';
 
 import Logo from '@/assets/img/logo(blue).png';
 import { useInitUser } from '@/hooks/useInitUser';
+import { useLogout } from '@/hooks/useLogout';
 import { useUserStore } from '@/stores/userStore';
 
 import {
@@ -10,11 +11,18 @@ import {
   HeaderWrapper,
   LogoContainer,
   LogoSmallText,
+  LogoutBtn,
 } from './Header.style';
 
 const Header = () => {
   useInitUser();
   const user = useUserStore((state) => state.user);
+  const { mutate: logoutMutate } = useLogout();
+
+  const handleLogout = () => {
+    logoutMutate();
+  };
+
   return (
     <HeaderWrapper>
       <LogoContainer>
@@ -22,6 +30,7 @@ const Header = () => {
         <LogoSmallText>Admin</LogoSmallText>
       </LogoContainer>
       <HeaderRightContainer>
+        <LogoutBtn onClick={handleLogout}>로그아웃</LogoutBtn>
         {user ? <EmailBox>{user?.email}</EmailBox> : <></>}
       </HeaderRightContainer>
     </HeaderWrapper>

@@ -25,6 +25,8 @@ import { useUserStore } from '@/stores/userStore';
 import { primitiveColor, semanticColor } from '@/styles/colors';
 import { typoStyleMap } from '@/styles/typos';
 import { categoryMap, stats } from '@/types/consumption.type';
+import { useDelayedLoading } from '@/hooks/useDelayLoading';
+import CharacterLoading from '@/components/CharacterLoading/CharacterLoading';
 
 const getTopStats = (stats: stats[]) => {
   if (!stats || stats.length === 0) return [];
@@ -63,7 +65,7 @@ const ConsumptionReport = () => {
   const [isDateModalOpen, setIsDateModalOpen] = useState(false);
   const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') ?? '' : '';
 
-  const { data: monthsData } = useAvailableConsumptionMonth(token);
+  const { data: monthsData, isLoading: isLoadingMonths } = useAvailableConsumptionMonth(token);
   const months = useMemo(() => {
     return monthsData ? [...monthsData].sort((a, b) => (a > b ? -1 : 1)) : [];
   }, [monthsData]);
@@ -87,8 +89,13 @@ const ConsumptionReport = () => {
       ? `${selectedDate.year}-${selectedDate.month}`
       : '';
 
-  const { data: reports } = useConsumptionReport(token, yearMonth);
-  const { data: statistic } = useConsumptionStatistic(token, yearMonth);
+  const { data: reports, isLoading: isLoadingReports } = useConsumptionReport(token, yearMonth);
+  const { data: statistic, isLoading: isLoadingStats } = useConsumptionStatistic(token, yearMonth);
+
+  const isLoading = isLoadingMonths || isLoadingReports || isLoadingStats;
+  const showSkeleton = useDelayedLoading(isLoading, 1000);
+
+  if (showSkeleton || isLoading) return <CharacterLoading />;
 
   const handleDateModal = () => {
     setIsDateModalOpen(!isDateModalOpen);

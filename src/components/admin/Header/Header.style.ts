@@ -1,5 +1,7 @@
 'use client';
 
+import { backgroundColorMap, borderColorMap, textColorMap } from '@/components/Button/Button.type';
+import { typoStyleMap } from '@/styles/typos';
 import styled from '@emotion/styled';
 
 export const HeaderWrapper = styled.div`
@@ -59,4 +61,18 @@ export const EmailBox = styled.div`
   font-style: normal;
   font-weight: 400;
   line-height: normal;
+`;
+
+export const LogoutBtn = styled.button`
+  cursor: pointer;
+  ${typoStyleMap['body1_sb']};
+  width: fit-content;
+  padding: 8px 16px;
+  justify-content: center;
+  align-items: center;
+  border-radius: 7px;
+  border: 1px solid ${borderColorMap['SECONDARY']};
+  background-color: ${backgroundColorMap['SECONDARY']};
+  color: ${textColorMap['SECONDARY']};
+  font-size: 15px;
 `;

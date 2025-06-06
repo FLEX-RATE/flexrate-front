@@ -27,6 +27,7 @@ import { useInitUser } from '@/hooks/useInitUser';
 import { useLogout } from '@/hooks/useLogout';
 import type { User } from '@/stores/userStore';
 import { useUserStore } from '@/stores/userStore';
+import MyPageSkeleton from '@/components/skeletons/MypageSkeleton';
 
 const MyPage = () => {
   const router = useRouter();
@@ -45,11 +46,14 @@ const MyPage = () => {
   }, [router]);
 
   useInitUser();
-  const user: User | null = useUserStore((state) => state.user);
+  const user = useUserStore((state) => state.user);
+  const hydrated = useUserStore((state) => state._hasHydrated);
 
   const handleLogout = () => {
     logoutMutate();
   };
+
+  if (!hydrated) return <MyPageSkeleton />;
 
   return (
     <Wrapper>

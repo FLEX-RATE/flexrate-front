@@ -37,6 +37,8 @@ import {
   TableItemKey,
   TableItemValue,
 } from './ReviewResultAndLoanApplication.style';
+import { ReviewResultSkeleton } from '../../skeletons/ReviewResultSkeleton';
+import { useDelayedLoading } from '@/hooks/useDelayLoading';
 
 type FormData = z.infer<typeof applicationAgreeSchema.약관동의>;
 
@@ -48,7 +50,9 @@ interface ReviewResultProps {
 
 const ReviewResultAndLoanApplication = ({ value, onChange, onSubmit }: ReviewResultProps) => {
   const token = typeof window !== undefined ? localStorage.getItem('accessToken') ?? '' : '';
-  const { data: result } = useGetLoanReivewApplication(token);
+  const { data: result, isLoading } = useGetLoanReivewApplication(token);
+
+  const showSkeleton = useDelayedLoading(isLoading, 2000);
 
   const {
     watch,
@@ -58,6 +62,8 @@ const ReviewResultAndLoanApplication = ({ value, onChange, onSubmit }: ReviewRes
     resolver: zodResolver(applicationAgreeSchema.약관동의),
     mode: 'onChange',
   });
+
+  if (showSkeleton || isLoading) return <ReviewResultSkeleton />;
 
   const agreeService = watch('agreeService');
   const agreeCredit = watch('agreeCredit');

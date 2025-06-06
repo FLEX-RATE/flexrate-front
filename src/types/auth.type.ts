@@ -40,6 +40,7 @@ export interface LoginResponse {
   refreshToken: string;
   username: string;
   email: string;
+  role: 'MEMBER' | 'ADMIN';
 }
 
 export interface PasskeyRegisterChallengeResponse {

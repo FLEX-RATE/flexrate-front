@@ -40,8 +40,6 @@ const AreaChart = () => {
     return data?.rates.map((d) => formatPeriodLabel(d.period, periodType)) ?? [];
   }, [data, periodType]);
 
-  console.log(data?.rates.length);
-
   const getCompareText = (type: PeriodKey): string => {
     switch (type) {
       case 'DAILY':

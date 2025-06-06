@@ -20,24 +20,33 @@ export const useLoginUser = () => {
 
       localStorage.setItem('accessToken', loginRes.accessToken);
 
-      const [loanStatus, creditResult, creditScore] = await Promise.all([
+      const [loanStatus, creditResult] = await Promise.all([
         getCustomerLoanStatus(loginRes.accessToken),
         getCreditStatus(loginRes.accessToken),
-        getCreditScore(loginRes.accessToken),
       ]);
+
+      let creditScore = null;
+      if (creditResult.creditScoreStatus) {
+        creditScore = await getCreditScore(loginRes.accessToken);
+      }
 
       return {
         username: loginRes.username,
+        role: loginRes.role,
         email: loginRes.email,
         recentLoanStatus: loanStatus,
         hasCreditScore: creditResult.creditScoreStatus,
-        creditScore: creditScore.creditScore,
+        creditScore: creditScore?.creditScore ?? 0,
       };
     },
 
     onSuccess: (fullUser) => {
       setUser(fullUser);
-      router.push('/');
+      if (fullUser.role === 'ADMIN') {
+        router.push('/admin/customer-management');
+      } else {
+        router.push('/');
+      }
     },
 
     onError: (error: unknown) => {
