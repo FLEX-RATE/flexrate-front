@@ -5,7 +5,6 @@ import { typoStyleMap } from '@/styles/typos';
 
 export const MainContainer = styled.div`
   position: relative;
-  margin: 0 auto;
   width: 100%;
   margin: 0 auto;
   display: flex;

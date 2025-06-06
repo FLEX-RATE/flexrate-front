@@ -27,11 +27,17 @@ export const authSchemas = {
   }),
 
   agreement: z.object({
-    agreePrivacy: z.boolean().refine((val) => val === true, {
-      message: '개인정보 제공에 동의해주세요.',
+    agreeTerms: z.boolean().refine((val) => val === true, {
+      message: '전자금융거래 기본약관에 동의해주세요.',
     }),
-    agreeService: z.boolean().refine((val) => val === true, {
-      message: '서비스 이용 약관에 동의해주세요.',
+    agreePrivacy: z.boolean().refine((val) => val === true, {
+      message: '개인정보 수집·이용에 동의해주세요.',
+    }),
+    agreeThirdParty: z.boolean().refine((val) => val === true, {
+      message: '개인정보 제3자 제공에 동의해주세요.',
+    }),
+    agreePolicy: z.boolean().refine((val) => val === true, {
+      message: '개인정보 처리방침에 동의해주세요.',
     }),
   }),
 

@@ -3,7 +3,7 @@ import { useRouter } from 'next/navigation';
 import { z } from 'zod';
 
 import { loginUser } from '@/apis/auth';
-import { getCreditStatus } from '@/apis/credit';
+import { getCreditScore, getCreditStatus } from '@/apis/credit';
 import { getCustomerLoanStatus } from '@/apis/customer';
 import { authSchemas } from '@/schemas/auth.schema';
 import { useUserStore } from '@/stores/userStore';
@@ -20,9 +20,10 @@ export const useLoginUser = () => {
 
       localStorage.setItem('accessToken', loginRes.accessToken);
 
-      const [loanStatus, creditResult] = await Promise.all([
+      const [loanStatus, creditResult, creditScore] = await Promise.all([
         getCustomerLoanStatus(loginRes.accessToken),
         getCreditStatus(loginRes.accessToken),
+        getCreditScore(loginRes.accessToken),
       ]);
 
       return {
@@ -30,6 +31,7 @@ export const useLoginUser = () => {
         email: loginRes.email,
         recentLoanStatus: loanStatus,
         hasCreditScore: creditResult.creditScoreStatus,
+        creditScore: creditScore.creditScore,
       };
     },
 

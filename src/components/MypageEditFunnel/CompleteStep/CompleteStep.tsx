@@ -2,9 +2,10 @@ import { useEffect } from 'react';
 
 import { useRouter } from 'next/navigation';
 
-import { Wrapper } from '@/app/mypage/page.style';
 import { Title } from '@/components/loanApplicationFunnel/LoanApplicationFunnel.style';
 import { useUserStore } from '@/stores/userStore';
+
+import { Wrapper } from '../MypageEditFunnel.style';
 
 interface Props {
   email: string;

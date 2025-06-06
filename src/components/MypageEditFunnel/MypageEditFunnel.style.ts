@@ -1,21 +1,21 @@
-import styled from "@emotion/styled";
+import styled from '@emotion/styled';
 
-import { semanticColor } from "@/styles/colors";
-import { typoStyleMap } from "@/styles/typos";
+import { semanticColor } from '@/styles/colors';
+import { typoStyleMap } from '@/styles/typos';
 
 export const Wrapper = styled.div`
-  height: 85vh;
+  height: 100svh;
   overflow-y: auto;
 `;
 
 export const MainContainer = styled.div`
-    position: relative;
-    margin: 10% auto 40px auto;
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    padding: 11px 11px 80px 11px;
+  position: relative;
+  margin: 10% auto 40px auto;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  padding: 11px 11px 80px 11px;
 `;
 
 export const Title = styled.div`

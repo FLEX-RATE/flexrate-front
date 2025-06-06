@@ -65,7 +65,7 @@ export const Caption = styled.div`
 export const LoanApplicationContainer = styled.div`
   display: flex;
   flex-direction: column;
-  margin-top: 13px;
+  margin: 13px 0px 30px 0px;
 `;
 
 export const Description = styled.div`
@@ -92,7 +92,7 @@ export const MiniTitle = styled.div`
 `;
 
 export const SliderContainer = styled.div`
-  margin-top: 7px;
+  margin: 7px 0px 20px 0px;
   display: flex;
   flex-direction: column;
   gap: 16px;

@@ -117,6 +117,10 @@ export const FlexContainer = styled.div`
 `;
 
 export const Description = styled.div<{ type: string }>`
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
   cursor: pointer;
   ${typoStyleMap['caption1_m']};
   color: ${({ type }) =>

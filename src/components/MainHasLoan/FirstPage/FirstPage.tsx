@@ -87,7 +87,13 @@ const FirstPage = ({ user }: { user: User | null }) => {
             <CardContentContainer>
               <SubTitle>신용 평가 점수</SubTitle>
               <Description type="sub2" onClick={() => router.push('/credit-evaluation')}>
-                평가 다시 받기 -&gt;
+                평가 다시 받기
+                <Image
+                  src={'/icons/right_slide_arrow.svg'}
+                  width={8}
+                  height={8}
+                  alt="신용 점수 평가 받기"
+                />
               </Description>
             </CardContentContainer>
           </Card>

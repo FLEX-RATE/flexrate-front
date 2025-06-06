@@ -4,7 +4,7 @@ import { useFunnel } from '@use-funnel/browser';
 import { useRouter } from 'next/navigation';
 
 import { useClearFunnelContext } from '@/hooks/useClearFunnelContext';
-import { usePostLoanApplication, usePostLoanReviewApplication } from '@/hooks/useLoanApplication';
+import { usePostLoanReviewApplication } from '@/hooks/useLoanApplication';
 import { useResumeFunnel } from '@/hooks/useResumeFunnel';
 import { useLoanFunnelStore } from '@/stores/LoanFunnelStore';
 

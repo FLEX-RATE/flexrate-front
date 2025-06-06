@@ -13,6 +13,7 @@ interface StyledButtonProps {
 }
 
 export const ButtonContainer = styled.button<StyledButtonProps>`
+  will-change: transform;
   cursor: pointer;
   ${typoStyleMap['body1_sb']};
   width: ${({ $size }) => sizeWidthMapping[$size ?? 'XL']};

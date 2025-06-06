@@ -48,6 +48,6 @@ export const AppContainer = styled.div`
 
 export const InnerContainer = styled.div`
   position: relative;
-  padding: 30px 0px 0px 0px;
+  padding: 10px 0px 0px 0px;
   box-sizing: border-box;
 `;

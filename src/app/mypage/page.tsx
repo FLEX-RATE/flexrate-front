@@ -56,6 +56,7 @@ const MyPage = () => {
       <Header
         type="마이페이지"
         backIcon={true}
+        onClickBackIcon={() => router.push('/')}
         isLoggedIn={!!user}
         onLogoutClick={() => setIsLogoutModalOpen(true)}
       />

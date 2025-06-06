@@ -76,7 +76,7 @@ const EditPage = () => {
 
   return (
     <Wrapper>
-      <Header type="내 정보 변경" backIcon={true} />
+      <Header type="내 정보 변경" backIcon={true} onClickBackIcon={() => router.push('/')} />
 
       <Container>
         <MainContainer>

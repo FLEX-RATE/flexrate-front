@@ -1,5 +1,6 @@
-import { primitiveColor, semanticColor } from '@/styles/colors';
 import styled from '@emotion/styled';
+
+import { semanticColor } from '@/styles/colors';
 
 export const SliderWrapper = styled.div`
   width: 100%;

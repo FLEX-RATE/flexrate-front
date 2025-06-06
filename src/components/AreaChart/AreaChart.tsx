@@ -40,6 +40,8 @@ const AreaChart = () => {
     return data?.rates.map((d) => formatPeriodLabel(d.period, periodType)) ?? [];
   }, [data, periodType]);
 
+  console.log(data?.rates.length);
+
   const getCompareText = (type: PeriodKey): string => {
     switch (type) {
       case 'DAILY':
@@ -53,8 +55,10 @@ const AreaChart = () => {
     }
   };
 
-  const chartOptions: ApexOptions = useMemo(
-    () => ({
+  const chartOptions: ApexOptions = useMemo(() => {
+    const isSingleData = data?.rates.length === 1;
+
+    return {
       chart: {
         id: 'interest-chart',
         type: 'area',
@@ -83,6 +87,28 @@ const AreaChart = () => {
           },
         },
       },
+
+      markers: {
+        size: isSingleData ? 5 : 0,
+        colors: [semanticColor.bg.primary],
+        strokeColors: '#fff',
+        strokeWidth: 2,
+        shape: 'circle',
+        ...(isSingleData
+          ? {
+              discrete: [
+                {
+                  seriesIndex: 0,
+                  dataPointIndex: 0,
+                  fillColor: semanticColor.bg.primary,
+                  strokeColor: '#fff',
+                  size: 6,
+                },
+              ],
+            }
+          : {}),
+      },
+
       stroke: {
         curve: 'smooth',
         width: 2,
@@ -114,12 +140,7 @@ const AreaChart = () => {
       tooltip: {
         followCursor: true,
         enabled: true,
-        custom: (params: {
-          series: number[][];
-          seriesIndex: number;
-          dataPointIndex: number;
-          w: { globals: { labels: (string | number)[] } };
-        }) => {
+        custom: (params) => {
           const { series, seriesIndex, dataPointIndex } = params;
           const value = series[seriesIndex][dataPointIndex];
           const periodLabel = formatPeriodLabel(
@@ -133,27 +154,26 @@ const AreaChart = () => {
           const formattedValue = value.toFixed(1);
 
           return `
-          <div style="padding: 10px; border-radius: 15px; background: ${
-            semanticColor.card.card1
-          }; width: 137px;">
-            <div style="${cleanCSS(typoStyleMap['title2'])}; color: ${
+        <div style="padding: 10px; border-radius: 15px; background: ${
+          semanticColor.card.card1
+        }; width: 137px;">
+          <div style="${cleanCSS(typoStyleMap['title2'])}; color: ${
             semanticColor.text.normal.primary
           };">
-              ${formattedValue}<span style="${cleanCSS(typoStyleMap['caption3_b'])}; color: ${
+            ${formattedValue}<span style="${cleanCSS(typoStyleMap['caption3_b'])}; color: ${
             semanticColor.text.normal.primary
           };">%</span>
-            </div>
-            <div style="font-size: 12px; color: #9CA3AF; margin-top: 4px;">${periodLabel}</div>
-            <div style="font-size: 13px; margin-top: 4px; color: #4B5563;">
-              ${compareText} <span style="color: #10B981; font-weight: 600; margin-left: 4px;">▲ ${formattedPercent}%</span>
-            </div>
           </div>
-        `;
+          <div style="font-size: 12px; color: #9CA3AF; margin-top: 4px;">${periodLabel}</div>
+          <div style="font-size: 13px; margin-top: 4px; color: #4B5563;">
+            ${compareText} <span style="color: #10B981; font-weight: 600; margin-left: 4px;">▲ ${formattedPercent}%</span>
+          </div>
+        </div>
+      `;
         },
       },
-    }),
-    [categories, periodType, data]
-  );
+    };
+  }, [categories, periodType, data]);
 
   return (
     <ChartContainer>

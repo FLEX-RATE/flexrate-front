@@ -1,8 +1,18 @@
 'use client';
 
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
+
 import Button from '@/components/Button/Button';
+import CheckBox from '@/components/CheckBox/CheckBox';
+import {
+  CheckBoxContainer,
+  SmallCheckBoxes,
+} from '@/components/creditEvaluationStep/AgreementCredit.style';
 import TextField from '@/components/TextField/TextField';
 import { useGetLoanReivewApplication } from '@/hooks/useLoanApplication';
+import { applicationAgreeSchema } from '@/schemas/application.schema';
 import { formatNumberComma } from '@/utils/formatNumberComma';
 
 import { FunnelContextMap } from '../LoanApplicationFunnel';
@@ -28,6 +38,8 @@ import {
   TableItemValue,
 } from './ReviewResultAndLoanApplication.style';
 
+type FormData = z.infer<typeof applicationAgreeSchema.약관동의>;
+
 interface ReviewResultProps {
   value: FunnelContextMap['대출신청접수'];
   onChange: (ctx: FunnelContextMap['대출신청접수']) => void;
@@ -37,6 +49,32 @@ interface ReviewResultProps {
 const ReviewResultAndLoanApplication = ({ value, onChange, onSubmit }: ReviewResultProps) => {
   const token = typeof window !== undefined ? localStorage.getItem('accessToken') ?? '' : '';
   const { data: result } = useGetLoanReivewApplication(token);
+
+  const {
+    watch,
+    setValue,
+    formState: { isValid },
+  } = useForm<FormData>({
+    resolver: zodResolver(applicationAgreeSchema.약관동의),
+    mode: 'onChange',
+  });
+
+  const agreeService = watch('agreeService');
+  const agreeCredit = watch('agreeCredit');
+  const agreeProduct = watch('agreeProduct');
+  const agreeDescription = watch('agreeDescription');
+
+  const allChecked = agreeService && agreeCredit && agreeProduct && agreeDescription;
+
+  const handleAllChange = (val: boolean) => {
+    setValue('agreeService', val, { shouldValidate: true });
+    setValue('agreeCredit', val, { shouldValidate: true });
+    setValue('agreeProduct', val, { shouldValidate: true });
+    setValue('agreeDescription', val, { shouldValidate: true });
+  };
+
+  const isLoanInfoValid = value.loanAmount > 0 && value.repaymentMonth > 0;
+  const isFormValid = isValid && isLoanInfoValid;
 
   const loanLimit = result ? formatNumberComma(result?.loanLimit) : '';
 
@@ -121,10 +159,56 @@ const ReviewResultAndLoanApplication = ({ value, onChange, onSubmit }: ReviewRes
                 }
               ></Slider>
             </SliderContainer>
+            <CheckBoxContainer>
+              <CheckBox
+                size="large"
+                checked={allChecked}
+                label="전체 동의하기"
+                onChange={handleAllChange}
+              />
+
+              <SmallCheckBoxes>
+                <CheckBox
+                  size="small"
+                  label="[필수] 비대면 채널 대출상품 서비스 이용약관"
+                  showMoreText="더보기"
+                  showMoreUrl="https://ryuseunghan.notion.site/202c3966a14380db93c1ee48f92e56ff?source=copy_link"
+                  checked={agreeService}
+                  onChange={(val) => setValue('agreeService', val, { shouldValidate: true })}
+                />
+
+                <CheckBox
+                  size="small"
+                  label="[필수] 은행 여신거래 기본약관 (가계용)"
+                  showMoreText="더보기"
+                  showMoreUrl="https://ryuseunghan.notion.site/202c3966a14380499e59cf81113b1ca0?source=copy_link"
+                  checked={agreeCredit}
+                  onChange={(val) => setValue('agreeCredit', val, { shouldValidate: true })}
+                />
+
+                <CheckBox
+                  size="small"
+                  label="[필수] 비대면 금융상품 설명 확인서"
+                  showMoreText="더보기"
+                  showMoreUrl="https://ryuseunghan.notion.site/202c3966a143802d8f64ef33c191f10e?source=copy_link"
+                  checked={agreeProduct}
+                  onChange={(val) => setValue('agreeProduct', val, { shouldValidate: true })}
+                />
+
+                <CheckBox
+                  size="small"
+                  label="[필수] FlexRate 대출 상품 설명서"
+                  showMoreText="더보기"
+                  showMoreUrl="https://ryuseunghan.notion.site/FlexRate-204c3966a14380b3a8bef1c14291c956?source=copy_link"
+                  checked={agreeDescription}
+                  onChange={(val) => setValue('agreeDescription', val, { shouldValidate: true })}
+                />
+              </SmallCheckBoxes>
+            </CheckBoxContainer>
           </LoanApplicationContainer>
         </MainContainer>
         <BtnContainer>
-          <Button text="대출 신청하기" onClick={onSubmit} />
+          <Button text="대출 신청하기" onClick={onSubmit} disabled={!isFormValid} />
         </BtnContainer>
       </Container>
     )

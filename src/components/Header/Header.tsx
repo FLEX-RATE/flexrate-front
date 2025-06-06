@@ -26,19 +26,28 @@ type HeaderType =
 interface HeaderProps {
   type?: HeaderType;
   backIcon?: boolean;
+  onClickBackIcon?: () => void;
   isLoggedIn?: boolean;
   hasLoan?: boolean;
   onLogoutClick?: () => void;
 }
 
-const Header = ({ type, backIcon = false, isLoggedIn = false, onLogoutClick }: HeaderProps) => {
+const Header = ({
+  type,
+  backIcon = false,
+  isLoggedIn,
+  onLogoutClick,
+  onClickBackIcon,
+}: HeaderProps) => {
   const router = useRouter();
   const { unreadCount } = useUnreadNotificationCount();
   const notifications = () => router.push('/notifications');
   const mypage = () => router.push('/mypage');
 
   const handleBack = () => {
-    if (window.history.length > 1) {
+    if (onClickBackIcon) {
+      onClickBackIcon();
+    } else if (window.history.length > 1) {
       router.back();
     } else {
       router.push('/');
@@ -89,7 +98,7 @@ const Header = ({ type, backIcon = false, isLoggedIn = false, onLogoutClick }: H
       );
     }
 
-    if (type === '소비 습관 리포트' && isLoggedIn) {
+    if ((type === '소비 습관 리포트' || type === '대출 신청') && isLoggedIn) {
       return <None />;
     }
 

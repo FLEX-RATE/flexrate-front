@@ -4,7 +4,7 @@ import { semanticColor } from '@/styles/colors';
 import { typoStyleMap } from '@/styles/typos';
 
 export const Wrapper = styled.div`
-  height: 85vh;
+  height: 100svh;
   overflow-y: auto;
 `;
 
@@ -58,6 +58,7 @@ export const BtnContainer = styled.div`
   width: calc(100% - 44px);
   position: absolute;
   bottom: 0;
+  margin-bottom: 50px;
 `;
 
 export const TitleContainer = styled.div`

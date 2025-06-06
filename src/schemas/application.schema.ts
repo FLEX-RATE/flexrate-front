@@ -19,14 +19,23 @@ export const applicationSchema = z.object({
     loanAmount: z.number().positive('대출 금액을 입력해주세요'),
     repaymentMonth: z.number().positive('상환 기간을 입력해주세요'),
   }),
-  약관동의: z.object({
-    agreePrivacy: z.boolean().refine((val) => val === true, {
-      message: '개인정보 제공에 동의해주세요.',
-    }),
-    agreeService: z.boolean().refine((val) => val === true, {
-      message: '서비스 이용 약관에 동의해주세요.',
-    }),
-  }),
 });
 
 export type ApplicationFormData = z.infer<typeof applicationSchema>;
+
+export const applicationAgreeSchema = {
+  약관동의: z.object({
+    agreeService: z.boolean().refine((val) => val === true, {
+      message: '서비스 이용 약관에 동의해주세요.',
+    }),
+    agreeCredit: z.boolean().refine((val) => val === true, {
+      message: '여신거래 기본약관에 동의해주세요.',
+    }),
+    agreeProduct: z.boolean().refine((val) => val === true, {
+      message: '상품 설명 확인서에 동의해주세요.',
+    }),
+    agreeDescription: z.boolean().refine((val) => val === true, {
+      message: '대출 상품 설명서에 동의해주세요.',
+    }),
+  }),
+};

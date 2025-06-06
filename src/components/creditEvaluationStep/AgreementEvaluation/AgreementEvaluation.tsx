@@ -67,16 +67,18 @@ const AgreementEvaluation = () => {
                 varient="TERTIARY"
                 onClick={() => router.push('/')}
               />
-              <Button
-                text="대출 신청하기"
-                varient="PRIMARY"
-                onClick={() => {
-                  if (user?.recentLoanStatus === 'NONE') {
-                    mutate(PRODUCT_ID);
-                  }
-                  router.push('/loan-application');
-                }}
-              />
+              {user?.recentLoanStatus !== 'EXECUTED' && (
+                <Button
+                  text="대출 신청하기"
+                  varient="PRIMARY"
+                  onClick={() => {
+                    if (user?.recentLoanStatus === 'NONE') {
+                      mutate(PRODUCT_ID);
+                    }
+                    router.push('/loan-application');
+                  }}
+                />
+              )}
             </BtnContainer>
           </>
         )}

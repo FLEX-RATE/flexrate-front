@@ -3,7 +3,7 @@ import styled from '@emotion/styled';
 import { primitiveColor, semanticColor } from '@/styles/colors';
 
 export const Wrapper = styled.div`
-  height: 85vh;
+  height: 100svh;
   overflow-y: auto;
 `;
 
