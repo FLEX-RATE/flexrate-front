@@ -157,6 +157,8 @@ export const getFido2RegisterChallenge = async (): Promise<PasskeyRegisterChalle
   const response = await apiClient.get<PasskeyRegisterChallengeResponse>('/api/auth/fido2/register/options', {
     headers: { Authorization: `Bearer ${token}` },
   });
+  console.log('typeof response.data:', typeof response.data);
+  console.log('response.data:', response.data);
   return response.data;
 };
 

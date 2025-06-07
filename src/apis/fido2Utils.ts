@@ -1,51 +1,22 @@
-// components/fido2/fido2Utils.ts
-import { apiClient } from '@/apis/client'; // ← 경로는 실제 위치에 따라 조정
-import { Fido2RegistrationResponse } from './fido2Type';
+// src/apis/fido2Utils.ts
+import { getFido2RegisterChallenge, verifyFido2Register } from '@/apis/auth';
 
-export async function registerPasskey(): Promise<void> {
-  if (!window.PublicKeyCredential) {
-    throw new Error('이 브라우저는 패스키를 지원하지 않습니다.');
+// base64url base64 변환 함수
+function base64urlToBase64(base64url: string): string {
+  let base64 = base64url.replace(/-/g, '+').replace(/_/g, '/');
+  while (base64.length % 4 !== 0) {
+    base64 += '=';
   }
-
-  // 서버에서 등록용 challenge 및 옵션 받아오기
-  const { data: options } = await apiClient.post<PublicKeyCredentialCreationOptions>(
-    '/api/fido2/register/request'
-  );
-
-  // challenge, user.id base64 → ArrayBuffer 변환
-  if (typeof options.challenge === 'string') {
-    options.challenge = base64ToArrayBuffer(options.challenge);
-  }
-  if (options.user?.id) {
-    options.user.id = base64ToArrayBuffer(options.user.id as unknown as string);
-  }
-
-  // WebAuthn 등록
-  const credential = (await navigator.credentials.create({
-    publicKey: options,
-  })) as PublicKeyCredential;
-
-  if (!credential) throw new Error('패스키 등록이 취소되었습니다.');
-
-  const attestationResponse = credential.response as AuthenticatorAttestationResponse;
-
-  const rawId = arrayBufferToBase64(credential.rawId);
-  const clientDataJSON = arrayBufferToBase64(attestationResponse.clientDataJSON);
-  const attestationObject = arrayBufferToBase64(attestationResponse.attestationObject);
-  const deviceInfo = navigator.userAgent;
-
-  // 서버에 등록 검증 요청
-  await apiClient.post('/api/fido2/register/verify', {
-    credentialKey: credential.id,
-    rawId,
-    clientDataJSON,
-    attestationObject,
-    deviceInfo,
-  });
+  return base64;
 }
 
-// 유틸 함수: base64 <-> ArrayBuffer 변환
-export function base64ToArrayBuffer(base64: string): ArrayBuffer {
+// base64url 문자열을 ArrayBuffer로 변환
+export function base64ToArrayBuffer(base64url: string): ArrayBuffer {
+  if (typeof window === 'undefined' || typeof atob === 'undefined') {
+    throw new Error('base64ToArrayBuffer 함수는 브라우저 환경에서만 실행해야 합니다.');
+  }
+
+  const base64 = base64urlToBase64(base64url);
   const binaryString = atob(base64);
   const len = binaryString.length;
   const bytes = new Uint8Array(len);
@@ -55,6 +26,7 @@ export function base64ToArrayBuffer(base64: string): ArrayBuffer {
   return bytes.buffer;
 }
 
+// ArrayBuffer를 base64 문자열로 변환 (변경 없음)
 export function arrayBufferToBase64(buffer: ArrayBuffer): string {
   const bytes = new Uint8Array(buffer);
   let binary = '';
@@ -62,4 +34,68 @@ export function arrayBufferToBase64(buffer: ArrayBuffer): string {
     binary += String.fromCharCode(bytes[i]);
   }
   return btoa(binary);
+}
+
+export async function registerPasskey(): Promise<void> {
+  if (typeof window === 'undefined' || !window.PublicKeyCredential) {
+    throw new Error('이 브라우저는 패스키를 지원하지 않습니다.');
+  }
+
+  // 서버에서 challenge 및 옵션 받아오기
+  const options = await getFido2RegisterChallenge();
+
+  console.log('registerPasskey - options:', options);
+  console.log('challenge:', options.challenge);
+  console.log('user.id:', options.user?.id);
+
+  if (!options.challenge || typeof options.challenge !== 'string') {
+    throw new Error('서버에서 받은 challenge 값이 유효하지 않습니다.');
+  }
+
+  if (!options.user?.id || typeof options.user.id !== 'string') {
+    throw new Error('서버에서 받은 user.id 값이 유효하지 않습니다.');
+  }
+
+  // 기존 options를 복제 후 타입 명확히 하기
+  const publicKey: PublicKeyCredentialCreationOptions = {
+    ...options,
+    challenge: base64ToArrayBuffer(options.challenge),
+    user: {
+      ...options.user,
+      id: base64ToArrayBuffer(options.user.id),
+    },
+  };
+
+  // WebAuthn 생성 요청
+  const credential = (await navigator.credentials.create({
+    publicKey,
+  })) as PublicKeyCredential;
+
+  if (!credential) throw new Error('패스키 등록이 취소되었습니다.');
+
+  const attestationResponse = credential.response as AuthenticatorAttestationResponse;
+
+  // 서버 전송용 데이터 base64 인코딩
+  const rawId = arrayBufferToBase64(credential.rawId);
+  const clientDataJSON = arrayBufferToBase64(attestationResponse.clientDataJSON);
+  const attestationObject = arrayBufferToBase64(attestationResponse.attestationObject);
+  const deviceInfo = navigator.userAgent;
+
+
+  console.log('verifyFido2Register 호출 직전 데이터:', {
+  credentialId: credential.id,
+  rawId,
+  clientDataJSON,
+  attestationObject,
+  deviceInfo,
+  });
+
+  // 등록 검증 API 호출 (rawId 포함)
+  await verifyFido2Register({
+  credentialId: credential.id,
+  rawId,
+  clientDataJSON,
+  attestationObject,
+  deviceInfo,
+  });
 }

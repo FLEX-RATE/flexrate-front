@@ -75,11 +75,13 @@ export interface PasskeyAuthentication {
 
 export interface PasskeyRequest {
   credentialId: string;
+  rawId: string;
   clientDataJSON: string;
   attestationObject: string;
   email?: string;
   deviceInfo: string;
 }
+
 
 export interface PasskeyLoginChallengeRequest {
   email: string;
@@ -87,6 +89,7 @@ export interface PasskeyLoginChallengeRequest {
 
 export interface PasskeyRegisterRequest {
   credentialId: string;
+  rawId: string;
   clientDataJSON: string;
   attestationObject: string;
   email?: string;
@@ -114,10 +117,4 @@ export interface PasskeyLoginRequest {
   deviceInfo: string;
   challenge: string;
   rawId: string;
-}
-
-export interface AllowedCredential {
-  id: string;
-  type: string;
-  transports?: string[];
 }

@@ -70,8 +70,8 @@ const handleSelectFinger = async () => {
     const publicKeyCredentialRequestOptions: PublicKeyCredentialRequestOptions = {
       challenge: base64ToArrayBuffer(challengeData.challenge),
       rpId: challengeData.rpId,
-      allowCredentials: challengeData.allowedCredentialIds.map((credId) => ({
-        id: base64ToArrayBuffer(credId),
+      allowCredentials: challengeData.allowedCredentialIds.map((cred) => ({
+        id: base64ToArrayBuffer(cred.id), // 객체에서 id 꺼내서 변환
         type: 'public-key',
       })),
       timeout: 60000,
@@ -97,6 +97,7 @@ const handleSelectFinger = async () => {
       authMethod: 'PASSKEY', // enum 문자열로 교체
       deviceInfo: navigator.userAgent,
       passkeyData,
+      rawId: arrayBufferToBase64(credential.rawId),
     };
 
     const response = await loginWithPasskey(passkeyLoginRequest);
