@@ -1,8 +1,12 @@
-import PasskeyRegisterPage from '@/components/fido2/PasskeyRegisterPage';
+// app/fido2/register/page.tsx
+import React from 'react';
+import PasskeyRegisterForm from '@/components/fido2/PasskeyRegisterForm';
 
-const RegisterPage = () => {
-
-  return <PasskeyRegisterPage/>;
-};
-
-export default RegisterPage;
+export default function PasskeyRegisterPage() {
+  return (
+    <main>
+      <h1>패스키 등록</h1>
+      <PasskeyRegisterForm />
+    </main>
+  );
+}
