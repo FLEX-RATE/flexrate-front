@@ -1,4 +1,5 @@
 // components/fido2/fido2Utils.ts
+import { apiClient } from '@/apis/client'; // ← 경로는 실제 위치에 따라 조정
 import { Fido2RegistrationResponse } from './fido2Type';
 
 export async function registerPasskey(): Promise<void> {
@@ -7,15 +8,14 @@ export async function registerPasskey(): Promise<void> {
   }
 
   // 서버에서 등록용 challenge 및 옵션 받아오기
-  const resp = await fetch('/api/fido2/register/request', {
-    method: 'POST',
-  });
-  if (!resp.ok) throw new Error('등록 요청 실패');
-
-  const options: PublicKeyCredentialCreationOptions = await resp.json();
+  const { data: options } = await apiClient.post<PublicKeyCredentialCreationOptions>(
+    '/api/fido2/register/request'
+  );
 
   // challenge, user.id base64 → ArrayBuffer 변환
-  options.challenge = base64ToArrayBuffer(options.challenge as unknown as string);
+  if (typeof options.challenge === 'string') {
+    options.challenge = base64ToArrayBuffer(options.challenge);
+  }
   if (options.user?.id) {
     options.user.id = base64ToArrayBuffer(options.user.id as unknown as string);
   }
@@ -29,27 +29,19 @@ export async function registerPasskey(): Promise<void> {
 
   const attestationResponse = credential.response as AuthenticatorAttestationResponse;
 
+  const rawId = arrayBufferToBase64(credential.rawId);
   const clientDataJSON = arrayBufferToBase64(attestationResponse.clientDataJSON);
   const attestationObject = arrayBufferToBase64(attestationResponse.attestationObject);
-
   const deviceInfo = navigator.userAgent;
 
-  // 서버에 등록 검증 요청 (DTO 형태에 맞춰 전송)
-  const verifyResp = await fetch('/api/fido2/register/verify', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      credentialKey: credential.id,
-      clientDataJSON,
-      attestationObject,
-      deviceInfo,
-    }),
+  // 서버에 등록 검증 요청
+  await apiClient.post('/api/fido2/register/verify', {
+    credentialKey: credential.id,
+    rawId,
+    clientDataJSON,
+    attestationObject,
+    deviceInfo,
   });
-
-  if (!verifyResp.ok) {
-    const errText = await verifyResp.text();
-    throw new Error(`패스키 등록 검증 실패: ${errText}`);
-  }
 }
 
 // 유틸 함수: base64 <-> ArrayBuffer 변환

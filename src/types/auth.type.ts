@@ -43,6 +43,8 @@ export interface LoginResponse {
   role: 'MEMBER' | 'ADMIN';
 }
 
+// --- FIDO2 / Passkey 관련 타입 ---
+
 export interface PasskeyRegisterChallengeResponse {
   challenge: string;
   rp: {
@@ -63,8 +65,6 @@ export interface PasskeyRegisterChallengeResponse {
     authenticatorAttachment?: 'platform' | 'cross-platform';
   };
 }
-
-
 
 export interface PasskeyAuthentication {
   credentialId: string;      
@@ -93,19 +93,31 @@ export interface PasskeyRegisterRequest {
   deviceInfo: string;
 }
 
-
+// AllowedCredential 타입 추가
+export interface AllowedCredential {
+  id: string;          // base64url 인코딩된 credential ID
+  type: string;        // 보통 "public-key"
+  transports?: string[];
+}
 
 export interface PasskeyLoginChallengeResponse {
   challenge: string;
   rpId: string;
   userHandle: string;
-  allowedCredentialIds: string[];
+  allowedCredentialIds: AllowedCredential[];
 }
 
 export interface PasskeyLoginRequest {
   email: string;
   passkeyData: PasskeyAuthentication;
-  authMethod: string;        // AuthMethod enum 문자열로 받을 예정
+  authMethod: string;
   deviceInfo: string;
   challenge: string;
+  rawId: string;
+}
+
+export interface AllowedCredential {
+  id: string;
+  type: string;
+  transports?: string[];
 }

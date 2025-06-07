@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { registerPasskey } from './fido2Utils';
+import { registerPasskey } from '../../apis/fido2Utils';
 
 export default function PasskeyRegisterForm() {
   const [loading, setLoading] = useState(false);
