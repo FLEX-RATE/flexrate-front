@@ -3,13 +3,13 @@ import { AxiosError } from 'axios';
 import { useRouter } from 'next/navigation';
 
 import { loanProductApi } from '@/apis/loanProducts';
+import { useUserStore } from '@/stores/userStore';
 
 export const useSelectLoanProduct = () => {
   const router = useRouter();
-
+  const token = useUserStore((state) => state.accessToken);
   return useMutation({
     mutationFn: async (productId: number) => {
-      const token = localStorage.getItem('accessToken');
       if (!token) {
         throw { response: { status: 401 } };
       }

@@ -1,9 +1,11 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import Image from 'next/image';
 
+import { getMain } from '@/apis/interest';
 import { useInitUser } from '@/hooks/useInitUser';
 import { useSlideTouch } from '@/hooks/useSlideTouch';
+import { queryClient } from '@/lib/queryClient';
 import { useUserStore } from '@/stores/userStore';
 
 import FirstPage from './FirstPage/FirstPage';
@@ -20,7 +22,7 @@ import SecondPage from './SecondPage/SecondPage';
 
 const MainHasLoan = () => {
   useInitUser();
-  const user = useUserStore((state) => state.user);
+  const { user, accessToken, _hasHydrated } = useUserStore();
   const [index, setIndex] = useState(0);
   const totalSlides = 2;
   const {
@@ -32,6 +34,15 @@ const MainHasLoan = () => {
     onMouseUp,
     onMouseLeave,
   } = useSlideTouch(index, totalSlides, setIndex);
+
+  useEffect(() => {
+    if (_hasHydrated && accessToken) {
+      queryClient.prefetchQuery({
+        queryKey: ['mainSecondPage'],
+        queryFn: () => getMain(accessToken),
+      });
+    }
+  }, [_hasHydrated, accessToken]);
 
   return (
     <SliderWrapper>

@@ -13,6 +13,7 @@ import {
   KeypadWrapper,
   Title,
 } from '@/components/signup/SignupPinForm/SignupPinForm.style';
+import { useUserStore } from '@/stores/userStore';
 
 const PIN_LENGTH = 6;
 
@@ -35,6 +36,7 @@ const AddPinLogin = ({ onComplete }: AddPinLoginProps) => {
   const [confirmPin, setConfirmPin] = useState<string[]>(Array(PIN_LENGTH).fill(''));
   const [step, setStep] = useState<'input' | 'confirm'>('input');
   const [loading, setLoading] = useState(false);
+  const token = useUserStore((state) => state.accessToken);
 
   const shuffledNumbers = useMemo(() => shuffleArray([1, 2, 3, 4, 5, 6, 7, 8, 9]), []);
 
@@ -82,7 +84,7 @@ const AddPinLogin = ({ onComplete }: AddPinLoginProps) => {
 
       setLoading(true);
       setTimeout(() => {
-        registerPin({ pin: pinStr })
+        registerPin(token!, { pin: pinStr })
           .then(() => {
             alert('PIN 등록 완료!');
             setLoading(false);

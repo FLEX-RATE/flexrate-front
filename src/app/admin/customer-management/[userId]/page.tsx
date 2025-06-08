@@ -30,6 +30,7 @@ import {
   SEX_LABEL_MAP,
   MEMBERSTATUS_LABEL_MAP,
 } from '@/constants/customer.constant';
+import { useUserStore } from '@/stores/userStore';
 
 import { PageContainer, ContentColumn, HeaderContainer, Title } from './page.style';
 
@@ -39,10 +40,11 @@ const CustomerDetailPage = () => {
   const memberId = params.userId as string;
   const [currentPage, setCurrentPage] = useState(0);
   const PAGE_SIZE = 4;
-  const [accessToken, setAccessToken] = useState<string | null>(null);
+  const [accessToken, setAccessToken] = useState<string | null>(
+    useUserStore((state) => state.accessToken)
+  );
 
   useEffect(() => {
-    const accessToken = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
     if (!accessToken) {
       router.replace('/admin/not-found');
     } else {

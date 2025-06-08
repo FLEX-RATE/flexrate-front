@@ -1,7 +1,9 @@
 import type { Metadata } from 'next';
 
 import '@/app/globals.css';
+import { EmotionProvider } from '@/components/EmotionProvider/EmotionProvider';
 import GlobalStyleProvider from '@/components/GlobalStyleProvider/GlobalStyleProvider';
+import { pretendard } from '@/fonts/pretendard';
 
 import { Providers } from './providers';
 
@@ -16,10 +18,23 @@ const RootLayout = ({
   children: React.ReactNode;
 }>) => {
   return (
-    <html lang="ko">
+    <html lang="ko" className={pretendard.variable}>
+      <head>
+        <link rel="preconnect" href="http://localhost:8080" />
+        <link rel="dns-prefetch" href="http://localhost:8080" />
+        <link
+          rel="preload"
+          href="@/fonts/PretendardVariable.woff2"
+          as="font"
+          type="font/woff2"
+          crossOrigin="anonymous"
+        />
+      </head>
       <body suppressHydrationWarning={true}>
         <GlobalStyleProvider>
-          <Providers>{children}</Providers>
+          <EmotionProvider>
+            <Providers>{children}</Providers>
+          </EmotionProvider>
         </GlobalStyleProvider>
       </body>
     </html>

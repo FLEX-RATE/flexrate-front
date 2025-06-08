@@ -29,6 +29,7 @@ import {
 } from '@/hooks/useLoanApplicationsQuery';
 import { usePatchLoanStatus } from '@/hooks/usePatchLoanStatus';
 import { useLoanFilterStore } from '@/stores/loanFilterStore';
+import { useUserStore } from '@/stores/userStore';
 import type { LoanDetailsApiResponse } from '@/types/admin.type';
 import type { LoanFilterType } from '@/types/loan.filter.type';
 import { formatYMD } from '@/utils/dateFormat';
@@ -50,7 +51,8 @@ import {
   ModalColumnContainer,
   ModalRowContainer,
   InfoBottomText,
-  ErrorInfo, DivideMargin,
+  ErrorInfo,
+  DivideMargin,
 } from './page.style';
 
 const PAGE_SIZE = 8;
@@ -131,7 +133,9 @@ const AdminLoanApplicationPage = () => {
   const { RangePicker } = DatePicker;
   const router = useRouter();
   const queryClient = useQueryClient();
-  const [accessToken, setAccessToken] = useState<string | null>(null);
+  const [accessToken, setAccessToken] = useState<string | null>(
+    useUserStore((state) => state.accessToken)
+  );
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [statusChangeForm] = Form.useForm();
   const [pendingStatusChange, setPendingStatusChange] = useState<{
@@ -355,7 +359,6 @@ const AdminLoanApplicationPage = () => {
    */
   // 최초 렌더링 시 accessToken 확인 및 설정
   useEffect(() => {
-    const accessToken = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
     if (!accessToken) {
       router.replace('/admin/not-found');
     } else {
@@ -578,7 +581,10 @@ const AdminLoanApplicationPage = () => {
 
                 <ModalInfoValueColumn>
                   <InfoValue>
-                    {displayValue(detail?.appliedAt, (v) => `${formatYMD({ dateString: v?.toString() })}`)}
+                    {displayValue(
+                      detail?.appliedAt,
+                      (v) => `${formatYMD({ dateString: v?.toString() })}`
+                    )}
                   </InfoValue>
                   <InfoValue>
                     {displayValue(
@@ -595,7 +601,9 @@ const AdminLoanApplicationPage = () => {
                       if (v === 0) {
                         return `-`;
                       }
-                      return `${Number(v)}% (최종 갱신 ${formatYMD({ dateString: detail?.lastInterestDate || undefined })})`;
+                      return `${Number(v)}% (최종 갱신 ${formatYMD({
+                        dateString: detail?.lastInterestDate || undefined,
+                      })})`;
                     })}
                   </InfoValue>
                 </ModalInfoValueColumn>
@@ -617,8 +625,16 @@ const AdminLoanApplicationPage = () => {
                   </InfoValue>
                   <InfoValue>
                     {displayValue(detail?.repaymentMonths, (v) => {
-                      const start = formatYMD(detail?.repaymentStartDate ? { dateString: detail.repaymentStartDate } : undefined);
-                      const end = formatYMD(detail?.repaymentEndDate ? { dateString: detail.repaymentEndDate } : undefined);
+                      const start = formatYMD(
+                        detail?.repaymentStartDate
+                          ? { dateString: detail.repaymentStartDate }
+                          : undefined
+                      );
+                      const end = formatYMD(
+                        detail?.repaymentEndDate
+                          ? { dateString: detail.repaymentEndDate }
+                          : undefined
+                      );
 
                       if (start === '-' && end === '-') {
                         return `-`;

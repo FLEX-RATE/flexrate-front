@@ -16,6 +16,7 @@ import { User, useUserStore } from '@/stores/userStore';
 
 const EditPage = () => {
   const router = useRouter();
+  const token = useUserStore((state) => state.accessToken);
 
   useInitUser();
   const user: User | null = useUserStore((state) => state.user);
@@ -29,7 +30,6 @@ const EditPage = () => {
   });
 
   useEffect(() => {
-    const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
     if (!token) {
       router.replace('/not-found');
     }
@@ -49,7 +49,6 @@ const EditPage = () => {
   };
   const handleEmailEdit = () => router.push('/mypage/edit-email');
   const handleSave = async () => {
-    const token = localStorage.getItem('accessToken');
     if (!token) {
       router.replace('/not-found');
       return;

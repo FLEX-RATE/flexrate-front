@@ -1,5 +1,3 @@
-import Image from 'next/image';
-
 import LoanDashboard from '@/components/main/LoanDashboard/LoanDashboard';
 import { useMainFirstPage } from '@/hooks/useMainFirstPage';
 import { useMainSecondPage } from '@/hooks/useMainSecondPage';

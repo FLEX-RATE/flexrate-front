@@ -22,9 +22,9 @@ import { useUserStore } from '@/stores/userStore';
 import { LoanStatusType } from '@/types/user.type';
 
 const LoanResult = () => {
-  const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') ?? '' : '';
+  const token = useUserStore((state) => state.accessToken);
   const router = useRouter();
-  const { data: result } = useGetLoanApplication(token);
+  const { data: result } = useGetLoanApplication(token!);
   const user = useUserStore((state) => state.user);
   const setUser = useUserStore((state) => state.setUser);
   const { mutate } = useSelectLoanProduct();

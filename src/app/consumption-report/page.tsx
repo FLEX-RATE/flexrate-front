@@ -9,6 +9,7 @@ import { useRouter } from 'next/navigation';
 
 import BottomSheet from '@/components/BottomSheet/BottomSheet';
 import Button from '@/components/Button/Button';
+import CharacterLoading from '@/components/CharacterLoading/CharacterLoading';
 import Header from '@/components/Header/Header';
 import {
   Description,
@@ -21,12 +22,11 @@ import {
   useConsumptionReport,
   useConsumptionStatistic,
 } from '@/hooks/useConsumptionReport';
+import { useDelayedLoading } from '@/hooks/useDelayLoading';
 import { useUserStore } from '@/stores/userStore';
 import { primitiveColor, semanticColor } from '@/styles/colors';
 import { typoStyleMap } from '@/styles/typos';
 import { categoryMap, stats } from '@/types/consumption.type';
-import { useDelayedLoading } from '@/hooks/useDelayLoading';
-import CharacterLoading from '@/components/CharacterLoading/CharacterLoading';
 
 const getTopStats = (stats: stats[]) => {
   if (!stats || stats.length === 0) return [];
@@ -69,9 +69,9 @@ const ConsumptionReport = () => {
   const user = useUserStore((state) => state.user);
   const router = useRouter();
   const [isDateModalOpen, setIsDateModalOpen] = useState(false);
-  const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') ?? '' : '';
+  const token = useUserStore((state) => state.accessToken);
 
-  const { data: monthsData, isLoading: isLoadingMonths } = useAvailableConsumptionMonth(token);
+  const { data: monthsData, isLoading: isLoadingMonths } = useAvailableConsumptionMonth(token!);
   const months = useMemo(() => {
     return monthsData ? [...monthsData].sort((a, b) => (a > b ? -1 : 1)) : [];
   }, [monthsData]);
@@ -110,8 +110,8 @@ const ConsumptionReport = () => {
       ? `${selectedDate.year}-${selectedDate.month}`
       : '';
 
-  const { data: reports, isLoading: isLoadingReports } = useConsumptionReport(token, yearMonth);
-  const { data: statistic, isLoading: isLoadingStats } = useConsumptionStatistic(token, yearMonth);
+  const { data: reports, isLoading: isLoadingReports } = useConsumptionReport(token!, yearMonth);
+  const { data: statistic, isLoading: isLoadingStats } = useConsumptionStatistic(token!, yearMonth);
 
   const isLoading = isLoadingMonths || isLoadingReports || isLoadingStats;
   const showSkeleton = useDelayedLoading(isLoading, 1000);

@@ -6,9 +6,9 @@ import { useUserStore } from '@/stores/userStore';
 
 export const useLogout = () => {
   const router = useRouter();
+  const token = useUserStore((state) => state.accessToken);
   return useMutation({
     mutationFn: async () => {
-      const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') ?? '' : '';
       if (token) {
         await logout(token);
       }

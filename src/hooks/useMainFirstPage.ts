@@ -2,20 +2,21 @@ import { useQueries } from '@tanstack/react-query';
 
 import { getCreditScore } from '@/apis/credit';
 import { getInterestCurrent } from '@/apis/interest';
+import { useUserStore } from '@/stores/userStore';
 
 export const useMainFirstPage = () => {
-  const token = typeof window !== undefined ? localStorage.getItem('accessToken') ?? '' : '';
+  const token = useUserStore((state) => state.accessToken);
 
   const results = useQueries({
     queries: [
       {
         queryKey: ['interestCurrent'],
-        queryFn: () => getInterestCurrent(token),
+        queryFn: () => getInterestCurrent(token || ''),
         enabled: !!token,
       },
       {
         queryKey: ['credit-score'],
-        queryFn: () => getCreditScore(token),
+        queryFn: () => getCreditScore(token || ''),
         enabled: !!token,
       },
     ],

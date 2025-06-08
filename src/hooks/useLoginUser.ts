@@ -13,12 +13,13 @@ export type LoginFormValues = z.infer<typeof authSchemas.login>;
 export const useLoginUser = () => {
   const router = useRouter();
   const setUser = useUserStore((state) => state.setUser);
+  const setAccessToken = useUserStore((state) => state.setAccessToken);
 
   return useMutation({
     mutationFn: async (form: LoginFormValues) => {
       const loginRes = await loginUser(form);
 
-      localStorage.setItem('accessToken', loginRes.accessToken);
+      setAccessToken(loginRes.accessToken);
 
       const [loanStatus, creditResult] = await Promise.all([
         getCustomerLoanStatus(loginRes.accessToken),

@@ -23,6 +23,8 @@ export type User = {
 type UserStore = {
   _hasHydrated: boolean;
   setHasHydrated: (state: boolean) => void;
+  accessToken: string | null;
+  setAccessToken: (token: string | null) => void;
   user: User | null;
   setUser: (user: User | null) => void;
   clearUser: () => void;
@@ -38,7 +40,10 @@ export const useUserStore = create<UserStore>()(
       setHasHydrated: (state) => set({ _hasHydrated: state }),
       user: null,
       setUser: (user) => set({ user }),
-      clearUser: () => set({ user: null }),
+      clearUser: () => set({ user: null, accessToken: null }),
+
+      accessToken: null,
+      setAccessToken: (token: string | null) => set({ accessToken: token }),
     }),
     {
       name: 'user-storage',

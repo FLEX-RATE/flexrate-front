@@ -1,5 +1,6 @@
 import { EventSourcePolyfill } from 'event-source-polyfill';
 
+import { useUserStore } from '@/stores/userStore';
 import {
   Notification as AppNotification,
   NotificationCountResponse,
@@ -10,16 +11,17 @@ import { apiClient } from './client';
 
 class NotificationAPI {
   private getAuthHeaders() {
-    const accessToken = localStorage.getItem('accessToken');
+    const accessToken = useUserStore.getState().accessToken;
     if (!accessToken) {
       throw new Error('Access token이 없습니다.');
     }
     return { Authorization: `Bearer ${accessToken}` };
   }
-
   // SSE 연결 설정 (쿼리 파라미터로만 인증)
-  connectSSE(onNotification: (notification: AppNotification) => void): EventSource {
-    const accessToken = localStorage.getItem('accessToken');
+  connectSSE(
+    onNotification: (notification: AppNotification, accessToken: string) => void
+  ): EventSource {
+    const accessToken = useUserStore.getState().accessToken;
 
     if (!accessToken) {
       throw new Error('Access token이 없습니다. SSE 연결 불가');
@@ -33,17 +35,9 @@ class NotificationAPI {
     );
 
     eventSource.addEventListener('notification', (event) => {
-      const messageEvent = event as MessageEvent; // 타입 단언
+      const messageEvent = event as MessageEvent;
       const notification: AppNotification = JSON.parse(messageEvent.data);
-      onNotification(notification);
-    });
-
-    eventSource.addEventListener('connect', (event) => {
-      console.log('SSE 연결 성공:', event);
-    });
-
-    eventSource.addEventListener('error', (event) => {
-      console.error('SSE 에러 발생:', event);
+      onNotification(notification, accessToken); // 여기서도 전달
     });
 
     return eventSource;

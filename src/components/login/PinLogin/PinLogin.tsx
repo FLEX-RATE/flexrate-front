@@ -14,6 +14,7 @@ import {
   KeypadWrapper,
   Title,
 } from '@/components/signup/SignupPinForm/SignupPinForm.style';
+import { useUserStore } from '@/stores/userStore';
 
 const PIN_LENGTH = 6;
 
@@ -31,7 +32,7 @@ const PinLogin = () => {
 
   const [pin, setPin] = useState<string[]>(Array(PIN_LENGTH).fill(''));
   const [loading, setLoading] = useState(false);
-
+  const token = useUserStore((state) => state.accessToken);
   const shuffledNumbers = useMemo(() => shuffleArray([1, 2, 3, 4, 5, 6, 7, 8, 9]), []);
 
   const handleKeyClick = (key: string) => {
@@ -58,7 +59,7 @@ const PinLogin = () => {
       const doVerify = async () => {
         setLoading(true);
         try {
-          const isValid = await verifyPin(pinStr);
+          const isValid = await verifyPin(token!, pinStr);
           if (isValid) {
             alert('PIN 인증 성공!');
             // TODO: PIN 검증 성공 후 원하는 동작 (예: 페이지 이동)

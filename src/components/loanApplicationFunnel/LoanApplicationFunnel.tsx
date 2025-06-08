@@ -47,9 +47,9 @@ export type FunnelContextMap = {
 
 const LoanApplicationFunnel = () => {
   const user = useUserStore((state) => state.user);
-  const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') ?? '' : '';
+  const token = useUserStore((state) => state.accessToken);
   const { funnelContext, setFunnelContext } = useLoanFunnelStore();
-  const { mutate: applyReviewLoan } = usePostLoanReviewApplication(token);
+  const { mutate: applyReviewLoan } = usePostLoanReviewApplication(token!);
 
   useClearFunnelContext();
   useResumeFunnel();

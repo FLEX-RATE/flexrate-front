@@ -67,8 +67,7 @@ export const loginUser = async (data: LoginRequest): Promise<LoginResponse> => {
 };
 
 // PIN 등록 API
-export const registerPin = async (data: { pin: string }): Promise<string> => {
-  const token = localStorage.getItem('accessToken');
+export const registerPin = async (token: string, data: { pin: string }): Promise<string> => {
   if (!token) {
     throw new Error('Access token is missing, 로그인 필요');
   }
@@ -93,8 +92,10 @@ export const postAuthToken = async () => {
 };
 
 // 로그인 PIN API
-export const loginWithPin = async (data: { pin: string }): Promise<LoginResponse> => {
-  const token = localStorage.getItem('accessToken');
+export const loginWithPin = async (
+  token: string,
+  data: { pin: string }
+): Promise<LoginResponse> => {
   const response = await apiClient.post<LoginResponse>('/api/auth/login/pin', data, {
     headers: { Authorization: `Bearer ${token}` },
   });
@@ -102,8 +103,7 @@ export const loginWithPin = async (data: { pin: string }): Promise<LoginResponse
 };
 
 // PIN 등록여부 조회 API
-export const checkPinRegistered = async (): Promise<boolean> => {
-  const token = localStorage.getItem('accessToken');
+export const checkPinRegistered = async (token: string): Promise<boolean> => {
   const response = await apiClient.get<boolean>('/api/auth/login/pin/registered', {
     headers: {
       Authorization: `Bearer ${token}`,
@@ -123,8 +123,7 @@ export const logout = async (token: string) => {
 };
 
 // PIN 검증 API
-export const verifyPin = async (pin: string): Promise<boolean> => {
-  const token = localStorage.getItem('accessToken');
+export const verifyPin = async (token: string, pin: string): Promise<boolean> => {
   if (!token) throw new Error('Access token is missing');
 
   const response = await apiClient.post<boolean>(

@@ -1,5 +1,7 @@
 import axios from 'axios';
 
+import { useUserStore } from '@/stores/userStore';
+
 import { postAuthToken } from './auth';
 
 // 공통 설정 포함 axios 인스턴스 생성 (baseURL, JSON 헤더)
@@ -10,7 +12,12 @@ export const apiClient = axios.create({
   },
 });
 
-const getAccessToken = () => localStorage.getItem('accessToken');
+const getAccessToken = () => {
+  if (typeof window !== 'undefined') {
+    return useUserStore.getState().accessToken;
+  }
+  return null;
+};
 const setAccessToken = (token: string) => localStorage.setItem('accessToken', token);
 
 apiClient.interceptors.request.use((config) => {

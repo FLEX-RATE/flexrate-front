@@ -11,10 +11,13 @@ import {
   SmallCheckBoxes,
 } from '@/components/creditEvaluationStep/AgreementCredit.style';
 import TextField from '@/components/TextField/TextField';
+import { useDelayedLoading } from '@/hooks/useDelayLoading';
 import { useGetLoanReivewApplication } from '@/hooks/useLoanApplication';
 import { applicationAgreeSchema } from '@/schemas/application.schema';
+import { useUserStore } from '@/stores/userStore';
 import { formatNumberComma } from '@/utils/formatNumberComma';
 
+import { ReviewResultSkeleton } from '../../skeletons/ReviewResultSkeleton';
 import { FunnelContextMap } from '../LoanApplicationFunnel';
 
 import {
@@ -37,8 +40,6 @@ import {
   TableItemKey,
   TableItemValue,
 } from './ReviewResultAndLoanApplication.style';
-import { ReviewResultSkeleton } from '../../skeletons/ReviewResultSkeleton';
-import { useDelayedLoading } from '@/hooks/useDelayLoading';
 
 type FormData = z.infer<typeof applicationAgreeSchema.약관동의>;
 
@@ -49,8 +50,8 @@ interface ReviewResultProps {
 }
 
 const ReviewResultAndLoanApplication = ({ value, onChange, onSubmit }: ReviewResultProps) => {
-  const token = typeof window !== undefined ? localStorage.getItem('accessToken') ?? '' : '';
-  const { data: result, isLoading } = useGetLoanReivewApplication(token);
+  const token = useUserStore((state) => state.accessToken);
+  const { data: result, isLoading } = useGetLoanReivewApplication(token!);
 
   const showSkeleton = useDelayedLoading(isLoading, 2000);
 

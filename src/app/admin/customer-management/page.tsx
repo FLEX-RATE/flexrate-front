@@ -11,6 +11,7 @@ import DataTable from '@/components/admin/DataTable/DataTable';
 import { useMembersQuery } from '@/hooks/useMembersQuery';
 import { usePatchMember } from '@/hooks/usePatchMember';
 import { useFilterStore } from '@/stores/filterStore';
+import { useUserStore } from '@/stores/userStore';
 import type { FilterType } from '@/types/filter.type';
 
 import { PageContainer, ContentColumn, FilterRow, FilterLabel } from './page.style';
@@ -76,6 +77,7 @@ const CustomerManagementPage = () => {
   const { RangePicker } = DatePicker;
   const router = useRouter();
   const [accessToken, setAccessToken] = useState<string | null>(null);
+  const token = useUserStore((state) => state.accessToken);
 
   const filterStore = useFilterStore();
   const {
@@ -178,7 +180,6 @@ const CustomerManagementPage = () => {
    */
   // 최초 렌더링 시 accessToken 확인 및 설정
   useEffect(() => {
-    const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
     if (!token) {
       router.replace('/admin/not-found');
     } else {

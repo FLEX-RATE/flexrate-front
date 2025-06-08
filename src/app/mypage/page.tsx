@@ -23,23 +23,24 @@ import Button from '@/components/Button/Button';
 import Header from '@/components/Header/Header';
 import { Container } from '@/components/loanApplicationFunnel/LoanApplicationFunnel.style';
 import Modal from '@/components/Modal/Modal';
+import MyPageSkeleton from '@/components/skeletons/MypageSkeleton';
 import { useInitUser } from '@/hooks/useInitUser';
 import { useLogout } from '@/hooks/useLogout';
-import type { User } from '@/stores/userStore';
 import { useUserStore } from '@/stores/userStore';
-import MyPageSkeleton from '@/components/skeletons/MypageSkeleton';
 
 const MyPage = () => {
   const router = useRouter();
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
   const { mutate: logoutMutate } = useLogout();
+  const token = useUserStore((state) => state.accessToken);
+
+  console.log(token);
 
   const handleClick = () => {
     router.push('/mypage/edit');
   };
 
   useEffect(() => {
-    const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
     if (!token) {
       router.replace('/not-found');
     }

@@ -31,7 +31,7 @@ const Banner = ({ isWithReport, type, borderNone }: BannerProps) => {
           </BannerLabel>
           <BannerDesc>{meta.description}</BannerDesc>
         </BannerTextContainer>
-        <Image src={meta.icon} alt={`${meta.label} icon`} width={50} height={50} />
+        <Image src={meta.icon} alt={`${meta.label} icon`} width={50} height={50} priority />
       </BannerContent>
       {isWithReport && (
         <ReportBtn onClick={() => router.push('/consumption-report')}>

@@ -10,11 +10,13 @@
   },
   "dependencies": {
     "@ant-design/icons": "^6.0.0",
+    "@emotion/cache": "^11.14.0",
     "@emotion/css": "^11.13.5",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
     "@hookform/resolvers": "^5.0.1",
     "@tanstack/react-query": "^5.74.7",
+    "@tanstack/react-query-devtools": "^5.80.6",
     "@use-funnel/browser": "^0.0.14",
     "@use-funnel/next": "^0.0.16",
     "@use-funnel/react-navigation-native": "^0.0.13",
@@ -23,6 +25,7 @@
     "antd": "^5.25.1",
     "apexcharts": "^4.7.0",
     "axios": "^1.9.0",
+    "critters": "^0.0.25",
     "dayjs": "^1.11.13",
     "event-source-polyfill": "^1.0.31",
     "framer-motion": "^12.11.1",
@@ -31,6 +34,8 @@
     "react-apexcharts": "^1.7.0",
     "react-dom": "^18",
     "react-hook-form": "^7.56.1",
+    "react-intersection-observer": "^9.16.0",
+    "sharp": "^0.34.2",
     "use-funnel": "^0.0.4",
     "zod": "^3.24.3",
     "zustand": "^5.0.3"
@@ -51,6 +56,7 @@
     "eslint-plugin-import": "^2.31.0",
     "eslint-plugin-prettier": "^5.4.0",
     "eslint-plugin-react-refresh": "^0.4.20",
+    "terser-webpack-plugin": "^5.3.14",
     "typescript": "^5"
   }
 }

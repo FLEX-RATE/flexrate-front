@@ -2,12 +2,13 @@
 
 import styled from '@emotion/styled';
 
+// import CharacterLoading from '@/components/CharacterLoading/CharacterLoading';
 import Header from '@/components/Header/Header';
 import IntroduceHome from '@/components/main/IntroduceHome/IntroduceHome';
 import TabBar from '@/components/main/TabBar/TabBar';
 import MainHasLoan from '@/components/MainHasLoan/MainHasLoan';
+import MainFirstPageSkeleton from '@/components/skeletons/MainFirstPageSkeleton';
 import { useUserStore } from '@/stores/userStore';
-import CharacterLoading from '@/components/CharacterLoading/CharacterLoading';
 
 const Home = () => {
   const user = useUserStore((state) => state.user);
@@ -15,7 +16,7 @@ const Home = () => {
   const isLoggedIn = !!user;
   const hasLoan = user?.recentLoanStatus === 'EXECUTED';
 
-  if (!hydrated) return <CharacterLoading />;
+  if (!hydrated) return <MainFirstPageSkeleton />;
 
   return (
     <Container>

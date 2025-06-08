@@ -1,7 +1,8 @@
 'use client';
 
-import { Skeleton, Spacing } from '@/components/Skeleton/Skeleton.style';
 import styled from '@emotion/styled';
+
+import { Skeleton, Spacing } from '@/components/Skeleton/Skeleton.style';
 
 const Container = styled.div`
   margin-top: 24px;

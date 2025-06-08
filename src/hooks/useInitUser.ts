@@ -8,24 +8,26 @@ import { useUserStore } from '@/stores/userStore';
  */
 export const useInitUser = () => {
   const setUser = useUserStore((state) => state.setUser);
+  const accessToken = useUserStore.getState().accessToken;
   const prevUser = useUserStore.getState().user;
 
   useEffect(() => {
-    if (!prevUser) {
-      setUser(null);
-      return;
-    }
+    if (!accessToken) return;
+
+    if (prevUser?.consumeGoal && prevUser?.consumptionType) return;
 
     getMyPageUser()
       .then((data) => {
-        setUser({
-          ...prevUser,
-          consumeGoal: data.consumeGoal,
-          consumptionType: data.consumptionType,
-        });
+        if (prevUser) {
+          setUser({
+            ...prevUser,
+            consumeGoal: data.consumeGoal,
+            consumptionType: data.consumptionType,
+          });
+        }
       })
       .catch(() => {
         setUser(null);
       });
-  }, [setUser]);
+  }, [accessToken, prevUser, setUser]);
 };
