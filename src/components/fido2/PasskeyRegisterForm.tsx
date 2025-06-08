@@ -3,6 +3,8 @@
 import React, { useState } from 'react';
 import { registerPasskey } from '../../apis/fido2Utils';
 
+import { Button, ErrorText, SuccessText } from './PasskeyRegisterForm.style';
+
 export default function PasskeyRegisterForm() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -24,13 +26,13 @@ export default function PasskeyRegisterForm() {
   return (
     <div>
       {success ? (
-        <p>패스키 등록이 완료되었습니다.</p>
+        <SuccessText>패스키 등록이 완료되었습니다.</SuccessText>
       ) : (
         <>
-          <button onClick={handleRegister} disabled={loading}>
+          <Button onClick={handleRegister} disabled={loading}>
             {loading ? '등록 중...' : '패스키 등록 시작'}
-          </button>
-          {error && <p style={{ color: 'red' }}>{error}</p>}
+          </Button>
+          {error && <ErrorText>{error}</ErrorText>}
         </>
       )}
     </div>

@@ -166,8 +166,11 @@ export const getFido2RegisterChallenge = async (): Promise<PasskeyRegisterChalle
 export const verifyFido2Register = async (data: PasskeyRequest): Promise<void> => {
   const token = localStorage.getItem('accessToken');
   if (!token) throw new Error('로그인 필요');
+  console.log('verifyFido2Register data:', data);
   await apiClient.post('/api/auth/fido2/register/verify', data, {
-    headers: { Authorization: `Bearer ${token}` },
+    headers: { Authorization: `Bearer ${token}`,
+    'Content-Type': 'application/json',
+   },
   });
 };
 

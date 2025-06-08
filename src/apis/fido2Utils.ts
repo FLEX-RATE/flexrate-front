@@ -74,6 +74,9 @@ export async function registerPasskey(): Promise<void> {
       ...options.user,
       id: base64ToArrayBuffer(options.user.id),
     },
+      pubKeyCredParams: [
+    { type: 'public-key', alg: -7 }  // EC만 허용
+  ]
   };
 
   // 사용자 디바이스에서 패스키 생성
@@ -84,6 +87,17 @@ export async function registerPasskey(): Promise<void> {
   if (!credential) {
     throw new Error('패스키 등록이 취소되었습니다.');
   }
+
+  // credential 전체확인
+  console.log("navigator.credentials.create 결과는:", credential);
+  console.log("credential.id:", credential.id);
+  console.log("credential.rawId:", credential.rawId);
+  console.log("clientDataJSON:", arrayBufferToBase64url(
+    (credential.response as AuthenticatorAttestationResponse).clientDataJSON
+  ));
+  console.log("attestationObject:", arrayBufferToBase64url(
+    (credential.response as AuthenticatorAttestationResponse).attestationObject
+  ));
 
   const attestationResponse = credential.response as AuthenticatorAttestationResponse;
 
@@ -105,6 +119,7 @@ export async function registerPasskey(): Promise<void> {
 
   // 변환 함수 사용 → 서버 DTO에 맞는 형태로 전환
   const requestDto = transformResponseToRequest(credential);
+  console.log('requestDto:', requestDto);
 
   // 서버로 등록 요청
   await verifyFido2Register(requestDto);
