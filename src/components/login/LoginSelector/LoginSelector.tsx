@@ -4,15 +4,6 @@ import React from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 
-
-
-import { loginWithPasskey,
-  checkPasskeyRegistered, 
-  // verifyFido2Register, 
-  // getFido2RegisterChallenge, 
-  getPasskeyLoginChallenge, 
-  // checkPinRegistered,
- } from '@/apis/auth'
 import BottomSheet from '@/components/BottomSheet/BottomSheet';
 import { useUserStore } from '@/stores/userStore';
 import {
@@ -23,11 +14,13 @@ import {
 import { base64ToArrayBuffer, arrayBufferToBase64 } from '@/utils/encoding';
 
 import {
+  BottomSheetHeaderContainer,
   BtnContainer,
   BtnWrapper,
   Container,
   Question,
   SheetBtn,
+  SubText,
   Title,
 } from './LoginSelector.style';
 
@@ -41,7 +34,6 @@ const LoginSelector = ({  onSelectPassword }: LoginSelectorProps) => {
   const user = useUserStore((state) => state.user);
 
   const handleSelectPin = async () => {
-
     alert('간편 비밀번호 기능은 현재 개발 중입니다.');
   };
 
@@ -113,6 +105,29 @@ const handleSelectFinger = async () => {
   // }
 };
 
+    // const accessToken = localStorage.getItem('accessToken');
+    // if (!accessToken) {
+    //   alert('로그인이 필요합니다.');
+    //   router.push('/auth/login');
+    //   return;
+    // }
+
+    // try {
+    //   const data = await checkPinRegistered();
+    //   if (data) {
+    //     router.push('/pin/login');
+    //   } else {
+    //     router.push('/pin/register');
+    //   }
+    // } catch (error) {
+    //   console.error('PIN 확인 실패:', error);
+    //   alert('오류가 발생했습니다.');
+    // }
+  };
+
+  const handleGoSignup = () => {
+    router.push('/auth/signup');
+  };
 
   return (
     <Container>
@@ -122,7 +137,10 @@ const handleSelectFinger = async () => {
         로그인을 진행할게요
       </Title>
       <BottomSheet isOpen={true}>
-        <Question>어떤 방법으로 로그인할까요?</Question>
+        <BottomSheetHeaderContainer>
+          <Question>어떤 방법으로 로그인할까요?</Question>
+          <SubText onClick={handleGoSignup}>회원가입</SubText>
+        </BottomSheetHeaderContainer>
         <BtnWrapper>
           <SheetBtn onClick={handleSelectPin}>
             <BtnContainer>

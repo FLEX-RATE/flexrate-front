@@ -15,6 +15,19 @@ export const Title = styled.div`
   color: ${semanticColor.text.normal.primary};
 `;
 
+export const BottomSheetHeaderContainer = styled.div`
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+`;
+
+export const SubText = styled.div`
+  cursor: pointer;
+  ${typoStyleMap['caption1_m']}
+  color: ${semanticColor.text.normal.sub2};
+`;
+
 export const Question = styled.div`
   padding: 12px 0px 12px 0px;
   ${typoStyleMap['title3']};

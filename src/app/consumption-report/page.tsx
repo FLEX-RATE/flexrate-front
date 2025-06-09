@@ -59,6 +59,12 @@ const circleLayouts = [
   { top: 230, left: 380 },
 ];
 
+const smallWidthLayouts = [
+  { top: 30, left: 100 },
+  { top: 160, left: 10 },
+  { top: 230, left: 180 },
+];
+
 const ConsumptionReport = () => {
   const user = useUserStore((state) => state.user);
   const router = useRouter();
@@ -77,6 +83,21 @@ const ConsumptionReport = () => {
   }, [months]);
 
   const [selectedDate, setSelectedDate] = useState<{ year: string; month: string } | null>(null);
+  const [circleLayout, setCircleLayout] = useState(circleLayouts);
+
+  useEffect(() => {
+    const updateLayout = () => {
+      if (window.innerWidth <= 360) {
+        setCircleLayout(smallWidthLayouts);
+      } else {
+        setCircleLayout(circleLayouts);
+      }
+    };
+
+    updateLayout();
+    window.addEventListener('resize', updateLayout);
+    return () => window.removeEventListener('resize', updateLayout);
+  }, []);
 
   useEffect(() => {
     if (initialDate && !selectedDate) {
@@ -126,7 +147,7 @@ const ConsumptionReport = () => {
             {topStats.map((stat, index) => {
               const delay = index * 0.2;
               const size = getCircleSize(stat.percentage, topStats[0].percentage);
-              const { top, left } = circleLayouts[index];
+              const { top, left } = circleLayout[index];
               const style = getCircleStyle(size, index);
 
               return (

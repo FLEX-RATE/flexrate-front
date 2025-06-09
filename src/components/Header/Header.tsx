@@ -43,6 +43,7 @@ const Header = ({
   const { unreadCount } = useUnreadNotificationCount();
   const notifications = () => router.push('/notifications');
   const mypage = () => router.push('/mypage');
+  const login = () => router.push('/auth/login');
 
   const handleBack = () => {
     if (onClickBackIcon) {
@@ -66,6 +67,14 @@ const Header = ({
             alt="마이페이지"
             onClick={mypage}
           />
+        </HeaderRightContainer>
+      );
+    }
+
+    if (type === '우리금융그룹' && !isLoggedIn) {
+      return (
+        <HeaderRightContainer>
+          <Image src="/icons/webee_36.svg" width={36} height={36} alt="로그인" onClick={login} />
         </HeaderRightContainer>
       );
     }

@@ -25,7 +25,7 @@ const SignupPage = () => {
 
   return (
     <Wrapper>
-      <Header backIcon={funnel.step !== '이메일인증'} />
+      <Header backIcon={true} />
       <funnel.Render
         이메일인증={funnel.Render.with({
           render: () => (

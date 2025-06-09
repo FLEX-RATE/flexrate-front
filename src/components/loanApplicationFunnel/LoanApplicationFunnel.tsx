@@ -7,6 +7,7 @@ import { useClearFunnelContext } from '@/hooks/useClearFunnelContext';
 import { usePostLoanReviewApplication } from '@/hooks/useLoanApplication';
 import { useResumeFunnel } from '@/hooks/useResumeFunnel';
 import { useLoanFunnelStore } from '@/stores/LoanFunnelStore';
+import { useUserStore } from '@/stores/userStore';
 
 import Header from '../Header/Header';
 import ProgressBar from '../ProgressBar/ProgressBar';
@@ -45,6 +46,7 @@ export type FunnelContextMap = {
 };
 
 const LoanApplicationFunnel = () => {
+  const user = useUserStore((state) => state.user);
   const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') ?? '' : '';
   const { funnelContext, setFunnelContext } = useLoanFunnelStore();
   const { mutate: applyReviewLoan } = usePostLoanReviewApplication(token);
@@ -90,7 +92,7 @@ const LoanApplicationFunnel = () => {
           </>
         ) : (
           <Title>
-            <Name>서채연</Name>님의 대출 심사 결과
+            <Name>{user?.username}</Name>님의 대출 심사 결과
           </Title>
         )}
       </JobFlexStartContainer>
