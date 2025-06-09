@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+
 import { registerPasskey } from '../../apis/fido2Utils';
 
 import { Button, ErrorText, SuccessText } from './PasskeyRegisterForm.style';

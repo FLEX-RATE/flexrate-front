@@ -1,12 +1,13 @@
-// app/fido2/register/page.tsx
-import React from 'react';
-import PasskeyRegisterForm from '@/components/fido2/PasskeyRegisterForm';
+// // app/fido2/register/page.tsx
+// import React from 'react';
 
-export default function PasskeyRegisterPage() {
-  return (
-    <main>
-      <h1>패스키 등록</h1>
-      <PasskeyRegisterForm />
-    </main>
-  );
-}
+// import PasskeyRegisterForm from '@/components/fido2/PasskeyRegisterForm';
+
+// export default function PasskeyRegisterPage() {
+//   return (
+//     <main>
+//       <h1>패스키 등록</h1>
+//       <PasskeyRegisterForm />
+//     </main>
+//   );
+// }

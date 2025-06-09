@@ -28,6 +28,8 @@ apiClient.interceptors.response.use(
 
     const status = error.response?.status;
     const message = error.response?.data?.message;
+    console.log(status, message);
+    
 
     if (status === 401 && message === '유효하지 않은 리프레시 토큰입니다.') {
       localStorage.removeItem('accessToken');

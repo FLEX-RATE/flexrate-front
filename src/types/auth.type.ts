@@ -78,8 +78,11 @@ export interface PasskeyRequest {
   rawId: string;
   clientDataJSON: string;
   attestationObject: string;
-  email?: string;
   deviceInfo: string;
+  publicKey: string;
+  signCount: number;
+  authenticatorData: string;
+  signature: string;
 }
 
 
