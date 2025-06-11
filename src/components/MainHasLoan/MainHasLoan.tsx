@@ -34,7 +34,7 @@ const MainHasLoan = () => {
   } = useSlideTouch(index, totalSlides, setIndex);
 
   return (
-    <SliderWrapper>
+    <SliderWrapper data-testid="main-has-loan">
       <IndicatorWrapperWithButtons>
         <ArrowWrapper disabled={index === 0} onClick={() => index > 0 && setIndex(index - 1)}>
           <Image src="/icons/left_slide_arrow.svg" alt="왼쪽 화살표" width={3.234} height={5.805} />

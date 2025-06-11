@@ -1,6 +1,10 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+
+import { AnimatePresence, motion } from 'framer-motion';
+import Image from 'next/image';
+
 import {
   AccordionValue,
   Container,
@@ -10,8 +14,6 @@ import {
   Title,
   Wrapper,
 } from './Accordion.style';
-import Image from 'next/image';
-import { AnimatePresence, motion } from 'framer-motion';
 
 interface AccordionProps<T extends string> {
   options: readonly T[];
@@ -38,7 +40,7 @@ const Accordion = <T extends string>({ options, title, value, onSelect }: Accord
     <Wrapper>
       {title && <Title>{title}</Title>}
       <Container ref={ref} open={open}>
-        <Header onClick={() => setOpen((prev) => !prev)}>
+        <Header onClick={() => setOpen((prev) => !prev)} data-testid="type-accordion">
           <AccordionValue>{value}</AccordionValue>
           <ImageContainer $open={open}>
             <Image src={'/icons/downArrow_24.svg'} width={14} height={24} alt="아래 화살표" />

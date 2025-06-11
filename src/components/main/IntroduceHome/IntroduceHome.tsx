@@ -77,7 +77,7 @@ const IntroduceHome = () => {
   };
 
   return (
-    <Wrapper>
+    <Wrapper data-testid="introduce-home">
       <IntroduceContentContainer>
         <IntroduceTextContainer>
           <Title>FlexRate</Title>

@@ -46,7 +46,7 @@ const ConsumptionResult = ({ onNext, userName }: ConsumptionResultProps) => {
   const showResult = animationDone && !isLoading && !!finalCharacter;
 
   return (
-    <Container>
+    <Container data-testid="consumption-result">
       <Title>{userName}님의 소비 성향은...</Title>
       <CharacterContainer>
         {!showResult ? (
