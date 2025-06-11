@@ -1,9 +1,11 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import Image from 'next/image';
-import { characterList } from '@/constants/auth.constant';
+
 import styled from '@emotion/styled';
+import Image from 'next/image';
+
+import { characterList } from '@/constants/auth.constant';
 
 const CharacterLoading = () => {
   const [index, setIndex] = useState(0);
@@ -19,7 +21,7 @@ const CharacterLoading = () => {
   }, []);
 
   return (
-    <Wrapper>
+    <Wrapper data-testid="character-loading">
       <Image
         key={index}
         src={characterList[index].src}
