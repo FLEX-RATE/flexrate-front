@@ -3,7 +3,7 @@ name: "Feature Template\U0001F6E0️"
 about: 구현할 기능 설명 템플릿
 title: 'feat:'
 labels: feat
-assignees: ''
+assignees: seocylucky
 
 ---
 
