@@ -3,27 +3,19 @@ import { InterestCurrentResponse, InterestRateResponse, MainResponse } from '@/t
 
 import { apiClient } from './client';
 
-export const getInterestStats = async (token: string, periodType: PeriodKey) => {
-  const response = await apiClient.get<InterestRateResponse>('/loans/interest/stats', {
-    headers: { Authorization: `Bearer ${token}` },
+export const getInterestStats = async (periodType: PeriodKey) => {
+  const { data } = await apiClient.get<InterestRateResponse>('/loans/interest/stats', {
     params: { periodType },
   });
-
-  return response.data;
+  return data;
 };
 
-export const getInterestCurrent = async (token: string) => {
-  const response = await apiClient.get<InterestCurrentResponse>('/loans/interest/current', {
-    headers: { Authorization: `Bearer ${token}` },
-  });
-
-  return response.data;
+export const getInterestCurrent = async () => {
+  const { data } = await apiClient.get<InterestCurrentResponse>('/loans/interest/current');
+  return data;
 };
 
-export const getMain = async (token: string) => {
-  const response = await apiClient.get<MainResponse>('/api/members/main', {
-    headers: { Authorization: `Bearer ${token}` },
-  });
-
-  return response.data;
+export const getMain = async () => {
+  const { data } = await apiClient.get<MainResponse>('/api/members/main');
+  return data;
 };

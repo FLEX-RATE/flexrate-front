@@ -39,16 +39,9 @@ export const postVerifyEmailCode = async (data: VerifyEmailCodeRequest): Promise
   await apiClient.post('/api/auth/email/verification', data);
 };
 
-// 이메일 변경 요청 - 토큰 헤더 필요해서 직접 호출
-export const patchEmailChange = async (token: string, email: string) => {
-  const { data } = await apiClient.patch(
-    `/api/members/mypage`,
-    { email },
-    {
-      headers: { Authorization: `Bearer ${token}` },
-    }
-  );
-
+// 이메일 변경 요청
+export const patchEmailChange = async (email: string) => {
+  const { data } = await apiClient.patch(`/api/members/mypage`, { email });
   return data;
 };
 
@@ -60,79 +53,45 @@ export const getConsumptionType = async (): Promise<ConsumptionTypeKey> => {
 
 // 로그인 API
 export const loginUser = async (data: LoginRequest): Promise<LoginResponse> => {
-  const response = await apiClient.post('/api/auth/login/password', data, {
-    withCredentials: true,
-  });
+  const response = await apiClient.post('/api/auth/login/password', data);
   return response.data;
 };
 
 // PIN 등록 API
 export const registerPin = async (data: { pin: string }): Promise<string> => {
-  const token = localStorage.getItem('accessToken');
-  if (!token) {
-    throw new Error('Access token is missing, 로그인 필요');
-  }
-  const response = await apiClient.post('/api/auth/login/pin/register', data, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
-  return response.data;
-};
-
-// 액세스 토큰 재발급 API
-export const postAuthToken = async () => {
-  const response = await axios.post<{ accessToken: string }>(
-    `${process.env.NEXT_PUBLIC_API_URL}/api/auth/token`,
-    {},
-    {
-      withCredentials: true,
-    }
-  );
-  return response.data.accessToken;
+  const res = await apiClient.post('/api/auth/login/pin/register', data);
+  return res.data;
 };
 
 // 로그인 PIN API
 export const loginWithPin = async (data: { pin: string }): Promise<LoginResponse> => {
-  const token = localStorage.getItem('accessToken');
-  const response = await apiClient.post<LoginResponse>('/api/auth/login/pin', data, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
-  return response.data;
+  const res = await apiClient.post('/api/auth/login/pin', data);
+  return res.data;
 };
 
 // PIN 등록여부 조회 API
 export const checkPinRegistered = async (): Promise<boolean> => {
-  const token = localStorage.getItem('accessToken');
-  const response = await apiClient.get<boolean>('/api/auth/login/pin/registered', {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
-  return response.data;
-};
-
-// 로그아웃 API
-export const logout = async (token: string) => {
-  const { data } = await apiClient.post(
-    '/api/auth/logout',
-    {},
-    { headers: { Authorization: `Bearer ${token}` }, withCredentials: true }
-  );
-  return data;
+  const res = await apiClient.get<boolean>('/api/auth/login/pin/registered');
+  return res.data;
 };
 
 // PIN 검증 API
 export const verifyPin = async (pin: string): Promise<boolean> => {
-  const token = localStorage.getItem('accessToken');
-  if (!token) throw new Error('Access token is missing');
+  const res = await apiClient.post<boolean>('/api/auth/pin/verify', { pin });
+  return res.data;
+};
 
-  const response = await apiClient.post<boolean>(
-    '/api/auth/pin/verify',
-    { pin },
-    {
-      headers: { Authorization: `Bearer ${token}` },
-    }
+// 토큰 재발급 API
+export const postAuthToken = async () => {
+  await axios.post(
+    `${process.env.NEXT_PUBLIC_API_URL}/api/auth/token`,
+    {},
+    { withCredentials: true }
   );
-  return response.data;
+};
+
+// 로그아웃 API
+export const logout = async () => {
+  const { data } = await apiClient.post('/api/auth/logout', {});
+  return data;
 };

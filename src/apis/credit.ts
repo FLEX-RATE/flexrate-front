@@ -2,26 +2,20 @@ import { CreditResponse, CreditStatusResponse } from '@/types/credit.type';
 
 import { apiClient } from './client';
 
-export const getCreditScoreEvaluate = async (token: string) => {
-  const { data } = await apiClient.get<CreditResponse>('/api/credit-score/evaluate', {
-    headers: { Authorization: `Bearer ${token}` },
-  });
-
+/** 신용 점수 평가 조회 */
+export const getCreditScoreEvaluate = async (): Promise<CreditResponse> => {
+  const { data } = await apiClient.get<CreditResponse>('/api/credit-score/evaluate');
   return data;
 };
 
-export const getCreditScore = async (token: string) => {
-  const { data } = await apiClient.get<CreditResponse>('/api/credit-score', {
-    headers: { Authorization: `Bearer ${token}` },
-  });
-
+/** 신용 점수 조회 */
+export const getCreditScore = async (): Promise<CreditResponse> => {
+  const { data } = await apiClient.get<CreditResponse>('/api/credit-score');
   return data;
 };
 
-export const getCreditStatus = async (token: string) => {
-  const { data } = await apiClient.get<CreditStatusResponse>('/api/members/credit-score-status', {
-    headers: { Authorization: `Bearer ${token}` },
-  });
-
+/** 신용 점수 등록 여부 조회 */
+export const getCreditStatus = async (): Promise<CreditStatusResponse> => {
+  const { data } = await apiClient.get<CreditStatusResponse>('/api/members/credit-score-status');
   return data;
 };

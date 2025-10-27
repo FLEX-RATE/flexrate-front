@@ -1,62 +1,44 @@
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
+import type { AxiosRequestConfig } from 'axios';
 
-import { postAuthToken } from './auth';
-
-// 공통 설정 포함 axios 인스턴스 생성 (baseURL, JSON 헤더)
 export const apiClient = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL,
-  headers: {
-    'Content-Type': 'application/json',
-  },
+  baseURL: '/api/bff',
+  withCredentials: true,
+  headers: { 'Content-Type': 'application/json' },
+  timeout: 10000,
 });
 
-const getAccessToken = () => localStorage.getItem('accessToken');
-const setAccessToken = (token: string) => localStorage.setItem('accessToken', token);
+type Cfg = AxiosRequestConfig & { _retry?: boolean };
+let refreshing: Promise<void> | null = null;
 
-apiClient.interceptors.request.use((config) => {
-  const token = getAccessToken();
-  if (token && config.headers) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
+async function refreshCookies() {
+  await axios.post('/api/bff/api/auth/token', {}, { withCredentials: true, timeout: 8000 });
+}
 
 apiClient.interceptors.response.use(
-  (response) => response,
-  async (error) => {
-    const originalConfig = error.config;
+  (res) => res,
+  async (err: AxiosError) => {
+    const status = err.response?.status;
+    const cfg = (err.config || {}) as Cfg;
 
-    const status = error.response?.status;
-    const message = error.response?.data?.message;
+    const url = (cfg.url || '').toLowerCase();
+    const isNotification = url.includes('/api/notification') || url.includes('/notification/');
 
-    if (status === 401 && message === '유효하지 않은 리프레시 토큰입니다.') {
-      localStorage.removeItem('accessToken');
-      window.location.href = '/auth/login';
-      return Promise.reject(error);
-    }
-
-    if (status === 401 && originalConfig && !originalConfig._retry) {
-      originalConfig._retry = true;
-
+    if (!isNotification && status === 401 && !cfg._retry) {
+      cfg._retry = true;
       try {
-        const newAccessToken = await postAuthToken();
-        setAccessToken(newAccessToken);
-
-        return apiClient.request({
-          ...originalConfig,
-          headers: {
-            Authorization: `Bearer ${newAccessToken}`,
-            ...(originalConfig.headers || {}),
-          },
-          data: originalConfig.data,
-        });
-      } catch (e) {
-        localStorage.removeItem('accessToken');
-        window.location.href = '/auth/login';
-        return Promise.reject(e);
+        refreshing ??= refreshCookies().finally(() => (refreshing = null));
+        await refreshing;
+        return apiClient.request(cfg);
+      } catch {
+        if (typeof window !== 'undefined') location.replace('/auth/login');
       }
     }
 
-    return Promise.reject(error);
+    if (status === 401 && cfg._retry) {
+      if (typeof window !== 'undefined') location.replace('/auth/login');
+    }
+
+    return Promise.reject(err);
   }
 );

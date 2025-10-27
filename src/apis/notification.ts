@@ -1,5 +1,3 @@
-import { EventSourcePolyfill } from 'event-source-polyfill';
-
 import {
   Notification as AppNotification,
   NotificationCountResponse,
@@ -9,37 +7,13 @@ import {
 import { apiClient } from './client';
 
 class NotificationAPI {
-  private getAuthHeaders() {
-    const accessToken = localStorage.getItem('accessToken');
-    if (!accessToken) {
-      throw new Error('Access token이 없습니다.');
-    }
-    return { Authorization: `Bearer ${accessToken}` };
-  }
-
-  // SSE 연결 설정 (쿼리 파라미터로만 인증)
-  connectSSE(onNotification: (notification: AppNotification) => void): EventSource {
-    const accessToken = localStorage.getItem('accessToken');
-
-    if (!accessToken) {
-      throw new Error('Access token이 없습니다. SSE 연결 불가');
-    }
-
-    const eventSource = new EventSourcePolyfill(
-      `${process.env.NEXT_PUBLIC_API_URL}/api/notification/subscribe?token=${accessToken}`,
-      {
-        withCredentials: true,
-      }
-    );
+  connectSSE(onNotification: (n: AppNotification) => void): EventSource {
+    const eventSource = new EventSource('/api/bff/api/notification/subscribe');
 
     eventSource.addEventListener('notification', (event) => {
-      const messageEvent = event as MessageEvent; // 타입 단언
+      const messageEvent = event as MessageEvent;
       const notification: AppNotification = JSON.parse(messageEvent.data);
       onNotification(notification);
-    });
-
-    eventSource.addEventListener('connect', (event) => {
-      console.log('SSE 연결 성공:', event);
     });
 
     eventSource.addEventListener('error', (event) => {
@@ -49,56 +23,23 @@ class NotificationAPI {
     return eventSource;
   }
 
-  // 알림 목록 조회 (무한스크롤)
   async getNotifications(lastNotificationId?: number): Promise<NotificationResponse> {
-    const params = lastNotificationId ? { lastNotificationId } : {};
-
-    try {
-      const { data } = await apiClient.get<NotificationResponse>('/api/notification', {
-        headers: this.getAuthHeaders(),
-        params,
-      });
-      return data;
-    } catch (error) {
-      throw new Error('알림 조회 실패');
-    }
+    const params = lastNotificationId ? `?lastNotificationId=${lastNotificationId}` : '';
+    const { data } = await apiClient.get(`/api/notification${params}`);
+    return data;
   }
 
-  // 읽음 처리
   async markAsRead(notificationId: number): Promise<void> {
-    try {
-      await apiClient.post(`/api/notification/read/${notificationId}`, null, {
-        headers: this.getAuthHeaders(),
-      });
-    } catch (error) {
-      throw new Error('읽음 처리 실패');
-    }
+    await apiClient.post(`/api/notification/read/${notificationId}`);
   }
 
-  // 전체 삭제
   async deleteAll(): Promise<void> {
-    try {
-      await apiClient.delete('/api/notification', {
-        headers: this.getAuthHeaders(),
-      });
-    } catch (error) {
-      throw new Error('전체 삭제 실패');
-    }
+    await apiClient.delete(`/api/notification`);
   }
 
-  // 읽지 않은 알림 개수
   async getUnreadCount(): Promise<NotificationCountResponse> {
-    try {
-      const { data } = await apiClient.get<NotificationCountResponse>(
-        `/api/notification/unread-count`,
-        {
-          headers: this.getAuthHeaders(),
-        }
-      );
-      return data;
-    } catch (error) {
-      throw new Error('읽지 않은 알림 개수 조회 실패');
-    }
+    const { data } = await apiClient.get(`/api/notification/unread-count`);
+    return data;
   }
 }
 

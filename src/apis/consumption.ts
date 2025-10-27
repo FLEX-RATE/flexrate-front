@@ -5,32 +5,23 @@ import {
 
 import { apiClient } from './client';
 
-export const getConsumptionReport = async (token: string, month: string) => {
+export const getConsumptionReport = async (month?: string) => {
   const { data } = await apiClient.get<GetConsumptionReportResponse[]>(
     '/api/reports/consumption-report',
-    {
-      headers: { Authorization: `Bearer ${token}` },
-      params: month ? { month } : undefined,
-    }
+    { params: month ? { month } : undefined }
   );
   return data;
 };
 
-export const getReportAvailableMonth = async (token: string) => {
-  const { data } = await apiClient.get<string[]>('/api/reports/available-months', {
-    headers: { Authorization: `Bearer ${token}` },
-  });
-
+export const getReportAvailableMonth = async () => {
+  const { data } = await apiClient.get<string[]>('/api/reports/available-months');
   return data;
 };
 
-export const getConsumptionStaticstic = async (token: string, month: string) => {
+export const getConsumptionStaticstic = async (month?: string) => {
   const { data } = await apiClient.get<GetConsumptionStaticsticResponse>(
     '/api/statistics/consumption-statistic',
-    {
-      headers: { Authorization: `Bearer ${token}` },
-      params: month ? { month } : undefined,
-    }
+    { params: month ? { month } : undefined }
   );
   return data;
 };
