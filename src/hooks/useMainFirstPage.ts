@@ -1,30 +1,28 @@
-import { useQueries } from '@tanstack/react-query';
+'use client';
 
-import { getCreditScore } from '@/apis/credit';
-import { getInterestCurrent } from '@/apis/interest';
+import { useQuery } from '@tanstack/react-query';
 
-export const useMainFirstPage = () => {
-  const token = typeof window !== undefined ? localStorage.getItem('accessToken') ?? '' : '';
+import { fetchInterestCurrent } from '@/queries/fetchers.client';
+import { qk } from '@/queries/keys';
+import { InterestCurrentResponse } from '@/types/interest.type';
 
-  const results = useQueries({
-    queries: [
-      {
-        queryKey: ['interestCurrent'],
-        queryFn: () => getInterestCurrent(token),
-        enabled: !!token,
-      },
-      {
-        queryKey: ['credit-score'],
-        queryFn: () => getCreditScore(token),
-        enabled: !!token,
-      },
-    ],
+import { useMe } from './useMe';
+
+export function useMainFirstPage() {
+  const interestQ = useQuery<InterestCurrentResponse | null, Error>({
+    queryKey: qk.interestCurrent,
+    queryFn: fetchInterestCurrent,
+    staleTime: 60_000,
+    refetchOnMount: false,
+    refetchOnReconnect: false,
+    refetchOnWindowFocus: false,
   });
 
-  const [interestCurrentQuery, creditScoreQuery] = results;
+  const meQ = useMe();
 
   return {
-    interestCurrent: interestCurrentQuery.data,
-    creditScore: creditScoreQuery.data,
+    interestCurrent: interestQ.data ?? null,
+    creditScore: { creditScore: meQ.data?.creditScore ?? 0 },
+    isLoading: interestQ.isLoading || meQ.isLoading,
   };
-};
+}

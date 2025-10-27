@@ -10,40 +10,34 @@ import {
   GetConsumptionStaticsticResponse,
 } from '@/types/consumption.type';
 
-export const useConsumptionReport = (
-  token: string,
-  month?: string,
-  enabled: boolean = !!token && !!month
-) => {
+export const useConsumptionReport = (month?: string, enabled: boolean = !!month) => {
   return useQuery<GetConsumptionReportResponse[]>({
     queryKey: ['consumption-reports', month],
     queryFn: async () => {
       if (!month) return [];
-      return await getConsumptionReport(token, month);
+      return getConsumptionReport(month);
     },
     enabled,
+    staleTime: 60_000,
   });
 };
 
-export const useAvailableConsumptionMonth = (token: string) => {
+export const useAvailableConsumptionMonth = () => {
   return useQuery<string[]>({
     queryKey: ['consumption-report-month'],
-    queryFn: () => getReportAvailableMonth(token),
-    enabled: !!token,
+    queryFn: () => getReportAvailableMonth(),
+    staleTime: 60_000,
   });
 };
 
-export const useConsumptionStatistic = (
-  token: string,
-  month?: string,
-  enabled: boolean = !!token && !!month
-) => {
+export const useConsumptionStatistic = (month?: string, enabled: boolean = !!month) => {
   return useQuery<GetConsumptionStaticsticResponse>({
     queryKey: ['consumption-statistic', month],
     queryFn: async () => {
       if (!month) throw new Error('해당 월 소비 데이터가 존재하지 않습니다.');
-      return await getConsumptionStaticstic(token, month);
+      return getConsumptionStaticstic(month);
     },
     enabled,
+    staleTime: 60_000,
   });
 };

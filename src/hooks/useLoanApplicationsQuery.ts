@@ -95,7 +95,6 @@ function useLoanApplicationQueryParams(filters: LoanFilterType, page: number, si
 /**
  * 관리자 대출 신청 목록 조회 API
  * @param filters 조회 필터
- * @param accessToken 인증 토큰
  * @param page 페이지 번호
  * @param size 페이지 크기 (기본값: 8)
  *
@@ -104,18 +103,17 @@ function useLoanApplicationQueryParams(filters: LoanFilterType, page: number, si
  */
 export const useLoanApplicationsQuery = (
   filters: LoanFilterType,
-  accessToken: string,
   page: number,
   size: number = PAGE_SIZE
 ) => {
   const params = useLoanApplicationQueryParams(filters, page, size);
-  const queryKey = ['loanApplications', JSON.stringify(params), accessToken];
+  const queryKey = ['loanApplications', JSON.stringify(params)];
 
   const queryResult = useQuery({
     queryKey,
     queryFn: async () => {
       try {
-        const data = await getLoanApplications(params, accessToken);
+        const data = await getLoanApplications(params);
         const { paginationInfo, loans } = data;
 
         const currentPage = Number(paginationInfo.currentPage) || 0;
@@ -154,7 +152,7 @@ export const useLoanApplicationsQuery = (
         throw new Error(`Failed to fetch loan application data: ${error}`);
       }
     },
-    enabled: !!accessToken,
+    enabled: !!params,
     staleTime: 1000 * 30,
   });
 

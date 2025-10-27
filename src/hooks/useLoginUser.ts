@@ -1,10 +1,11 @@
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { z } from 'zod';
 
 import { loginUser } from '@/apis/auth';
 import { getCreditScore, getCreditStatus } from '@/apis/credit';
 import { getCustomerLoanStatus } from '@/apis/customer';
+import { qk } from '@/queries/keys';
 import { authSchemas } from '@/schemas/auth.schema';
 import { useUserStore } from '@/stores/userStore';
 
@@ -12,25 +13,24 @@ export type LoginFormValues = z.infer<typeof authSchemas.login>;
 
 export const useLoginUser = () => {
   const router = useRouter();
+  const qc = useQueryClient();
   const setUser = useUserStore((state) => state.setUser);
 
   return useMutation({
     mutationFn: async (form: LoginFormValues) => {
       const loginRes = await loginUser(form);
 
-      localStorage.setItem('accessToken', loginRes.accessToken);
-
       const [loanStatus, creditResult] = await Promise.all([
-        getCustomerLoanStatus(loginRes.accessToken),
-        getCreditStatus(loginRes.accessToken),
+        getCustomerLoanStatus(),
+        getCreditStatus(),
       ]);
 
       let creditScore = null;
       if (creditResult.creditScoreStatus) {
-        creditScore = await getCreditScore(loginRes.accessToken);
+        creditScore = await getCreditScore();
       }
 
-      return {
+      const fullUser = {
         username: loginRes.username,
         role: loginRes.role,
         email: loginRes.email,
@@ -38,24 +38,29 @@ export const useLoginUser = () => {
         hasCreditScore: creditResult.creditScoreStatus,
         creditScore: creditScore?.creditScore ?? 0,
       };
+
+      return fullUser;
     },
 
     onSuccess: (fullUser) => {
+      qc.setQueryData(qk.me, fullUser);
+      qc.removeQueries({ queryKey: qk.mainSummary });
+      qc.removeQueries({ queryKey: qk.interestCurrent });
+
       setUser(fullUser);
+
+      console.log('[Login Success]', fullUser);
+
       if (fullUser.role === 'ADMIN') {
-        router.push('/admin/customer-management');
+        router.replace('/admin/customer-management');
       } else {
-        router.push('/');
+        router.replace('/');
       }
     },
 
     onError: (error: unknown) => {
-      if (error instanceof Error) {
-        console.error('로그인 실패:', error);
-        alert('이메일 또는 비밀번호가 올바르지 않습니다.');
-      } else {
-        console.error('알 수 없는 오류:', error);
-      }
+      console.error('로그인 실패:', error);
+      alert('이메일 또는 비밀번호가 올바르지 않습니다.');
     },
   });
 };

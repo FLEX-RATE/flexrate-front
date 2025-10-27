@@ -14,7 +14,6 @@ export interface SignupRequest {
 export interface SignupResponse {
   userId: number;
   email: string;
-  accessToken: string;
 }
 
 export interface SendEmailRequest {
@@ -36,8 +35,6 @@ export interface LoginRequest {
 }
 
 export interface LoginResponse {
-  accessToken: string;
-  refreshToken: string;
   username: string;
   email: string;
   role: 'MEMBER' | 'ADMIN';

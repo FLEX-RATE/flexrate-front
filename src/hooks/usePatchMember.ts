@@ -46,35 +46,29 @@ interface PatchMemberArgs {
     birthDate?: string;
     memberStatus?: string;
   };
-  accessToken: string;
 }
 
 function removeUndefined(obj: Record<string, unknown>) {
   return Object.fromEntries(Object.entries(obj).filter(([_, v]) => v !== undefined));
 }
 
-export function usePatchMember(
-  filters: FilterType,
-  accessToken: string,
-  page: number,
-  size: number = 8
-) {
+export function usePatchMember(filters: FilterType, page: number, size: number = 8) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ userId, payload, accessToken }: PatchMemberArgs) => {
+    mutationFn: async ({ userId, payload }: PatchMemberArgs) => {
       const rawPayload = {
         ...payload,
         sex: toRawSex(payload.sex),
         memberStatus: toRawMemberStatus(payload.memberStatus),
       };
       const cleanPayload = removeUndefined(rawPayload);
-      return patchMember(userId, cleanPayload, accessToken);
+      return patchMember(userId, cleanPayload);
     },
     onSuccess: () => {
       const params = filtersToParams(filters, page, size);
       queryClient.invalidateQueries({
-        queryKey: ['customers', JSON.stringify(params), accessToken],
+        queryKey: ['customers', JSON.stringify(params)],
       });
     },
   });

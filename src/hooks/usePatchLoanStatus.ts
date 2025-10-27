@@ -37,19 +37,13 @@ function toRawStatus(
 interface PatchLoanStatusArgs {
   applicationId: number;
   payload: { status: string; reason?: string };
-  accessToken: string;
 }
 
 function removeUndefined(obj: Record<string, unknown>) {
   return Object.fromEntries(Object.entries(obj).filter(([_, v]) => v !== undefined));
 }
 
-export function usePatchLoanStatus(
-  filters: LoanFilterType,
-  accessToken: string,
-  page: number,
-  size: number = 8
-) {
+export function usePatchLoanStatus(filters: LoanFilterType, page: number, size: number = 8) {
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -60,12 +54,12 @@ export function usePatchLoanStatus(
         reason: payload.reason || '대출 신청 상태 변경',
       };
       const cleanPayload = removeUndefined(rawPayload);
-      return patchLoanStatus(applicationId, cleanPayload, accessToken);
+      return patchLoanStatus(applicationId, cleanPayload);
     },
     onSuccess: () => {
       const params = filtersToLoanApplicationParams(filters, page, size);
       queryClient.invalidateQueries({
-        queryKey: ['loanApplications', params, accessToken],
+        queryKey: ['loanApplications', params],
       });
     },
   });

@@ -1,22 +1,35 @@
-import { useMutation } from '@tanstack/react-query';
+'use client';
+
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 
-import { logout } from '@/apis/auth';
+import { apiClient } from '@/apis/client';
+import { qk } from '@/queries/keys';
 import { useUserStore } from '@/stores/userStore';
 
 export const useLogout = () => {
   const router = useRouter();
+  const qc = useQueryClient();
+
   return useMutation({
     mutationFn: async () => {
-      const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') ?? '' : '';
-      if (token) {
-        await logout(token);
-      }
+      await apiClient.post('/api/auth/logout', {});
     },
-    onSettled: () => {
-      localStorage.removeItem('accessToken');
+    onSuccess: () => {
+      qc.setQueryData(qk.me, null);
+      qc.removeQueries({ queryKey: qk.mainSummary });
+      qc.removeQueries({ queryKey: qk.interestCurrent });
+
+      useUserStore.getState().clearUser();
+
+      router.replace('/');
+      router.refresh();
+    },
+    onError: () => {
+      qc.setQueryData(qk.me, null);
       useUserStore.getState().clearUser();
       router.replace('/');
+      router.refresh();
     },
   });
 };
