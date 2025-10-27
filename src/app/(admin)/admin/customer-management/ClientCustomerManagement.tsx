@@ -1,19 +1,32 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 
-import { Input, InputNumber, Select, Space, Button, DatePicker } from 'antd';
-import dayjs from 'dayjs';
-import { useRouter } from 'next/navigation';
+import Button from 'antd/es/button';
+import DatePicker from 'antd/es/date-picker';
+import Input from 'antd/es/input';
+import InputNumber from 'antd/es/input-number';
+import Select from 'antd/es/select';
+import Space from 'antd/es/space';
+import dayjs, { Dayjs } from 'dayjs';
+import dynamic from 'next/dynamic';
 
-import Conditionbar from '@/components/admin/Conditionbar/Conditionbar';
-import DataTable from '@/components/admin/DataTable/DataTable';
+import { useMe } from '@/hooks/useMe';
 import { useMembersQuery } from '@/hooks/useMembersQuery';
 import { usePatchMember } from '@/hooks/usePatchMember';
 import { useFilterStore } from '@/stores/filterStore';
 import type { FilterType } from '@/types/filter.type';
 
 import { PageContainer, ContentColumn, FilterRow, FilterLabel } from './page.style';
+
+const DataTable = dynamic(() => import('@/components/admin/DataTable/DataTable'), {
+  ssr: false,
+  loading: () => <div style={{ padding: 16 }}>테이블 불러오는 중…</div>,
+});
+const Conditionbar = dynamic(() => import('@/components/admin/Conditionbar/Conditionbar'), {
+  ssr: false,
+  loading: () => <div style={{ padding: 16 }}>상단 바 준비 중…</div>,
+});
 
 const PAGE_SIZE = 8;
 
@@ -66,18 +79,12 @@ const CUSTOMER_COLUMN_METAS = [
   { title: '', dataIndex: 'userId', key: 'userId', width: 60, editable: false },
 ] as const;
 
-/**
- * 관리자 페이지 - 고객 관리 메뉴
- * @since 2025.05.12
- * @lastmodified 2025.05.16
- * @author 권민지
- */
-const CustomerManagementPage = () => {
+const ClientCustomerManagement = () => {
   const { RangePicker } = DatePicker;
-  const router = useRouter();
-  const [accessToken, setAccessToken] = useState<string | null>(null);
 
-  const filterStore = useFilterStore();
+  const { data: me, isLoading: meLoading } = useMe();
+  const isAdmin = !!me && me.role === 'ADMIN';
+
   const {
     name,
     setName,
@@ -95,11 +102,9 @@ const CustomerManagementPage = () => {
     setTransactionCountMin,
     transactionCountMax,
     setTransactionCountMax,
-  } = filterStore;
+  } = useFilterStore();
 
   const [page, setPage] = useState(1);
-
-  // 필터 조회 전 입력값 보관용 임시 필터
   const [tempFilters, setTempFilters] = useState<FilterType>({
     name,
     sex,
@@ -111,7 +116,6 @@ const CustomerManagementPage = () => {
     transactionCountMax,
   });
 
-  // 조회용 필터
   const filters: FilterType = {
     name,
     sex,
@@ -123,33 +127,17 @@ const CustomerManagementPage = () => {
     transactionCountMax,
   };
 
-  /**
-   * 핸들러 및 유틸 함수
-   */
-  // 임시 필터 변경 핸들러
+  const toDayjsRange = (range?: [string, string] | null): [Dayjs | null, Dayjs | null] | null => {
+    if (!range) return null;
+    const [s, e] = range;
+    if (!s || !e) return null;
+    return [dayjs(s), dayjs(e)];
+  };
+
   const handleTempFilterChange = <K extends keyof FilterType>(key: K, value: FilterType[K]) => {
-    setTempFilters((prev) => ({
-      ...prev,
-      [key]: value,
-    }));
+    setTempFilters((prev) => ({ ...prev, [key]: value }));
   };
 
-  // 페이지 변경 핸들러
-  const handlePageChange = (newPage: number) => {
-    setPage(newPage);
-  };
-
-  // 날짜 범위 dayjs 객체 배열로 변환
-  const toDayjsRange = (
-    range?: [string, string]
-  ): [dayjs.Dayjs | null, dayjs.Dayjs | null] | undefined => {
-    if (range && range[0] && range[1]) {
-      return [dayjs(range[0]), dayjs(range[1])];
-    }
-    return undefined;
-  };
-
-  // 필터 적용 및 조회 버튼 클릭 핸들러
   const handleSearchClick = () => {
     setName(tempFilters.name);
     setSex(tempFilters.sex);
@@ -162,33 +150,17 @@ const CustomerManagementPage = () => {
     setPage(1);
   };
 
-  // 회원 정보 변경 핸들러
+  const { data, isLoading } = useMembersQuery(filters, page, PAGE_SIZE);
+  const patchMemberMutation = usePatchMember(filters, page, PAGE_SIZE);
+
+  if (meLoading) return <div style={{ padding: 16 }}>권한 확인 중…</div>;
+  if (!isAdmin) return null;
+
+  const handlePageChange = (newPage: number) => setPage(newPage);
   const handleChange = (value: string, dataIndex?: string, record?: { userId: number }) => {
-    if (!record?.userId || !accessToken || !dataIndex) return;
-
-    patchMemberMutation.mutate({
-      userId: record.userId,
-      payload: { [dataIndex]: value },
-      accessToken,
-    });
+    if (!record?.userId || !dataIndex) return;
+    patchMemberMutation.mutate({ userId: record.userId, payload: { [dataIndex]: value } });
   };
-
-  /**
-   * 데이터 패치 및 인증
-   */
-  // 최초 렌더링 시 accessToken 확인 및 설정
-  useEffect(() => {
-    const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
-    if (!token) {
-      router.replace('/admin/not-found');
-    } else {
-      setAccessToken(token);
-    }
-  }, [router]);
-
-  // 회원 목록 및 수정 뮤테이션 훅
-  const { data, isLoading } = useMembersQuery(filters, accessToken || '', page, PAGE_SIZE);
-  const patchMemberMutation = usePatchMember(filters, accessToken || '', page, PAGE_SIZE);
 
   return (
     <PageContainer>
@@ -196,7 +168,7 @@ const CustomerManagementPage = () => {
         <Conditionbar
           title="고객 관리"
           totalElements={
-            data?.paginationInfo.totalElements ? `${data.paginationInfo.totalElements}명` : '0명'
+            data?.paginationInfo?.totalElements ? `${data.paginationInfo.totalElements}명` : '0명'
           }
         >
           <Space wrap size="middle">
@@ -214,7 +186,7 @@ const CustomerManagementPage = () => {
               <FilterLabel>성별</FilterLabel>
               <Select
                 value={tempFilters.sex}
-                onChange={(e) => handleTempFilterChange('sex', e)}
+                onChange={(v) => handleTempFilterChange('sex', v)}
                 options={[
                   { value: 'ALL', label: '모두' },
                   { value: 'FEMALE', label: '여성' },
@@ -228,8 +200,10 @@ const CustomerManagementPage = () => {
               <FilterLabel>생년월일</FilterLabel>
               <RangePicker
                 format="YYYY-MM-DD"
-                value={toDayjsRange(tempFilters.birthDateRange || undefined)}
-                onChange={(_, dateStrings) => handleTempFilterChange('birthDateRange', dateStrings)}
+                value={toDayjsRange(tempFilters.birthDateRange ?? null)}
+                onChange={(_, dateStrings) =>
+                  handleTempFilterChange('birthDateRange', dateStrings as [string, string])
+                }
                 style={{ width: 240 }}
               />
             </FilterRow>
@@ -238,7 +212,7 @@ const CustomerManagementPage = () => {
               <FilterLabel>사용자 상태</FilterLabel>
               <Select
                 value={tempFilters.memberStatus}
-                onChange={(value) => handleTempFilterChange('memberStatus', value)}
+                onChange={(v) => handleTempFilterChange('memberStatus', v)}
                 options={[
                   { value: 'ALL', label: '모두' },
                   { value: 'ACTIVE', label: '활성' },
@@ -253,11 +227,11 @@ const CustomerManagementPage = () => {
               <FilterLabel>가입일</FilterLabel>
               <RangePicker
                 format="YYYY-MM-DD"
-                value={toDayjsRange(tempFilters.createdDateRange || undefined)}
+                value={toDayjsRange(tempFilters.createdDateRange ?? null)}
                 onChange={(_, dateStrings) =>
-                  handleTempFilterChange('createdDateRange', dateStrings)
+                  handleTempFilterChange('createdDateRange', dateStrings as [string, string])
                 }
-                style={{ width: '240px' }}
+                style={{ width: 240 }}
               />
             </FilterRow>
 
@@ -265,7 +239,7 @@ const CustomerManagementPage = () => {
               <FilterLabel>대출중 여부</FilterLabel>
               <Select
                 value={tempFilters.hasLoan}
-                onChange={(value) => handleTempFilterChange('hasLoan', value)}
+                onChange={(v) => handleTempFilterChange('hasLoan', v)}
                 options={[
                   { value: 'ALL', label: '모두' },
                   { value: 'TRUE', label: '대출중' },
@@ -281,7 +255,7 @@ const CustomerManagementPage = () => {
                 min={0}
                 max={100}
                 value={tempFilters.transactionCountMin}
-                onChange={(value) => handleTempFilterChange('transactionCountMin', value)}
+                onChange={(v) => handleTempFilterChange('transactionCountMin', v ?? 0)}
                 style={{ width: 65 }}
               />
               <p>~</p>
@@ -289,7 +263,7 @@ const CustomerManagementPage = () => {
                 min={0}
                 max={100}
                 value={tempFilters.transactionCountMax}
-                onChange={(value) => handleTempFilterChange('transactionCountMax', value)}
+                onChange={(v) => handleTempFilterChange('transactionCountMax', v ?? 0)}
                 style={{ width: 65 }}
               />
             </FilterRow>
@@ -304,15 +278,12 @@ const CustomerManagementPage = () => {
           loading={isLoading}
           columnMetas={[...CUSTOMER_COLUMN_METAS]}
           linkPrefix="/admin/customer-management/"
-          data={(data?.members || []).map((member) => ({
-            ...member,
-            handleChange: handleChange,
-          }))}
+          data={(data?.members || []).map((m) => ({ ...m, handleChange }))}
           paginationInfo={{
             currentPage: page,
-            pageSize: data?.paginationInfo.pageSize || PAGE_SIZE,
-            totalElements: data?.paginationInfo.totalElements || 0,
-            totalPages: data?.paginationInfo.totalPages || 0,
+            pageSize: data?.paginationInfo?.pageSize || PAGE_SIZE,
+            totalElements: data?.paginationInfo?.totalElements || 0,
+            totalPages: data?.paginationInfo?.totalPages || 0,
             onChange: handlePageChange,
           }}
         />
@@ -321,4 +292,4 @@ const CustomerManagementPage = () => {
   );
 };
 
-export default CustomerManagementPage;
+export default ClientCustomerManagement;

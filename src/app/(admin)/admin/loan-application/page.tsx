@@ -3,16 +3,21 @@
 import React, { useCallback, useEffect, useState } from 'react';
 
 import { useQueryClient } from '@tanstack/react-query';
-import { Input, InputNumber, Select, Space, Button, DatePicker, Form, message } from 'antd';
+import Button from 'antd/es/button';
+import DatePicker from 'antd/es/date-picker';
+import Form from 'antd/es/form';
+import Input from 'antd/es/input';
+import InputNumber from 'antd/es/input-number';
+import message from 'antd/es/message';
+import Select from 'antd/es/select';
+import Space from 'antd/es/space';
 import { isAxiosError } from 'axios';
 import dayjs from 'dayjs';
+import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
 
 import { getLoanApplicationDetail } from '@/apis/admin';
 import { SubContainer } from '@/app/mypage/page.style';
-import Conditionbar from '@/components/admin/Conditionbar/Conditionbar';
-import DataTable from '@/components/admin/DataTable/DataTable';
-import LoanStatusChangeModal from '@/components/admin/LoanStatusChangeModal/LoanStatusChangeModal';
 import FlexrateButton from '@/components/Button/Button';
 import { FlexContainer } from '@/components/loanApplicationFunnel/CreditStep/CreditStep.style';
 import TextField from '@/components/TextField/TextField';
@@ -50,8 +55,25 @@ import {
   ModalColumnContainer,
   ModalRowContainer,
   InfoBottomText,
-  ErrorInfo, DivideMargin,
+  ErrorInfo,
+  DivideMargin,
 } from './page.style';
+
+const DataTable = dynamic(() => import('@/components/admin/DataTable/DataTable'), {
+  ssr: false,
+  loading: () => null,
+});
+const Conditionbar = dynamic(() => import('@/components/admin/Conditionbar/Conditionbar'), {
+  ssr: false,
+  loading: () => null,
+});
+const LoanStatusChangeModal = dynamic(
+  () => import('@/components/admin/LoanStatusChangeModal/LoanStatusChangeModal'),
+  {
+    ssr: false,
+    loading: () => null,
+  }
+);
 
 const PAGE_SIZE = 8;
 
@@ -131,7 +153,6 @@ const AdminLoanApplicationPage = () => {
   const { RangePicker } = DatePicker;
   const router = useRouter();
   const queryClient = useQueryClient();
-  const [accessToken, setAccessToken] = useState<string | null>(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [statusChangeForm] = Form.useForm();
   const [pendingStatusChange, setPendingStatusChange] = useState<{
@@ -215,8 +236,8 @@ const AdminLoanApplicationPage = () => {
 
   const handleStatusChange = useCallback(
     (_: string, dataIndex?: string, record?: LoanApplicationTableRow) => {
-      if (!record?.applicationId || !accessToken || dataIndex !== 'status') {
-        console.error('상태 변경 실패: 필수 정보 누락', { record, accessToken, dataIndex });
+      if (!record?.applicationId || dataIndex !== 'status') {
+        console.error('상태 변경 실패: 필수 정보 누락', { record, dataIndex });
         return;
       }
 
@@ -229,20 +250,20 @@ const AdminLoanApplicationPage = () => {
       setReason('');
       setReasonError('');
     },
-    [accessToken]
+    []
   );
 
   // 모달 데이터 패치
   useEffect(() => {
-    if (isModalVisible && pendingStatusChange?.record?.applicationId && accessToken) {
-      getLoanApplicationDetail(pendingStatusChange.record.applicationId, accessToken)
+    if (isModalVisible && pendingStatusChange?.record?.applicationId) {
+      getLoanApplicationDetail(pendingStatusChange.record.applicationId)
         .then(setDetail)
         .catch(() => setDetail(null));
     }
     if (!isModalVisible) {
       setDetail(null);
     }
-  }, [isModalVisible, pendingStatusChange?.record?.applicationId, accessToken]);
+  }, [isModalVisible, pendingStatusChange?.record?.applicationId]);
 
   // 모달 취소 핸들러
   const handleModalCancel = () => {
@@ -251,7 +272,7 @@ const AdminLoanApplicationPage = () => {
 
     const params = filtersToLoanApplicationParams(filters, page, PAGE_SIZE);
     queryClient.invalidateQueries({
-      queryKey: ['loanApplications', JSON.stringify(params), accessToken],
+      queryKey: ['loanApplications', JSON.stringify(params)],
     });
   };
 
@@ -263,7 +284,7 @@ const AdminLoanApplicationPage = () => {
     }
     setReasonError('');
 
-    if (!detail || !accessToken) {
+    if (!detail) {
       setIsModalVisible(false);
       return;
     }
@@ -279,7 +300,6 @@ const AdminLoanApplicationPage = () => {
           {
             applicationId: detail.applicationId,
             payload: { status: newStatus, reason },
-            accessToken,
           },
           {
             onSuccess: () => {
@@ -290,7 +310,6 @@ const AdminLoanApplicationPage = () => {
                 queryKey: [
                   'loanApplications',
                   JSON.stringify(filtersToLoanApplicationParams(filters, page, PAGE_SIZE)),
-                  accessToken,
                 ],
               });
             },
@@ -309,7 +328,7 @@ const AdminLoanApplicationPage = () => {
               // 오류 발생 시 데이터 다시 로드
               const params = filtersToLoanApplicationParams(filters, page, PAGE_SIZE);
               queryClient.invalidateQueries({
-                queryKey: ['loanApplications', JSON.stringify(params), accessToken],
+                queryKey: ['loanApplications', JSON.stringify(params)],
               });
             },
           }
@@ -350,22 +369,9 @@ const AdminLoanApplicationPage = () => {
     setPage(1);
   };
 
-  /**
-   * 데이터 패치 및 인증
-   */
-  // 최초 렌더링 시 accessToken 확인 및 설정
-  useEffect(() => {
-    const accessToken = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
-    if (!accessToken) {
-      router.replace('/admin/not-found');
-    } else {
-      setAccessToken(accessToken);
-    }
-  }, [router]);
-
   // 대출 신청 목록 조회, 상태 수정 훅
-  const { data, isLoading } = useLoanApplicationsQuery(filters, accessToken || '', page, PAGE_SIZE);
-  const patchStatusMutation = usePatchLoanStatus(filters, accessToken || '', page, PAGE_SIZE);
+  const { data, isLoading } = useLoanApplicationsQuery(filters, page, PAGE_SIZE);
+  const patchStatusMutation = usePatchLoanStatus(filters, page, PAGE_SIZE);
 
   // 테이블 데이터에 상태 변경 핸들러 추가
   const tableData = React.useMemo(() => {
@@ -578,7 +584,10 @@ const AdminLoanApplicationPage = () => {
 
                 <ModalInfoValueColumn>
                   <InfoValue>
-                    {displayValue(detail?.appliedAt, (v) => `${formatYMD({ dateString: v?.toString() })}`)}
+                    {displayValue(
+                      detail?.appliedAt,
+                      (v) => `${formatYMD({ dateString: v?.toString() })}`
+                    )}
                   </InfoValue>
                   <InfoValue>
                     {displayValue(
@@ -595,7 +604,9 @@ const AdminLoanApplicationPage = () => {
                       if (v === 0) {
                         return `-`;
                       }
-                      return `${Number(v)}% (최종 갱신 ${formatYMD({ dateString: detail?.lastInterestDate || undefined })})`;
+                      return `${Number(v)}% (최종 갱신 ${formatYMD({
+                        dateString: detail?.lastInterestDate || undefined,
+                      })})`;
                     })}
                   </InfoValue>
                 </ModalInfoValueColumn>
@@ -617,8 +628,16 @@ const AdminLoanApplicationPage = () => {
                   </InfoValue>
                   <InfoValue>
                     {displayValue(detail?.repaymentMonths, (v) => {
-                      const start = formatYMD(detail?.repaymentStartDate ? { dateString: detail.repaymentStartDate } : undefined);
-                      const end = formatYMD(detail?.repaymentEndDate ? { dateString: detail.repaymentEndDate } : undefined);
+                      const start = formatYMD(
+                        detail?.repaymentStartDate
+                          ? { dateString: detail.repaymentStartDate }
+                          : undefined
+                      );
+                      const end = formatYMD(
+                        detail?.repaymentEndDate
+                          ? { dateString: detail.repaymentEndDate }
+                          : undefined
+                      );
 
                       if (start === '-' && end === '-') {
                         return `-`;

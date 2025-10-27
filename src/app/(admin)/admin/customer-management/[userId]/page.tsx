@@ -1,19 +1,18 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 
 import { ArrowLeftOutlined } from '@ant-design/icons';
 import { useQuery } from '@tanstack/react-query';
-import { Button, Spin } from 'antd';
+import Button from 'antd/es/button';
+import Spin from 'antd/es/spin';
 import dayjs from 'dayjs';
+import dynamic from 'next/dynamic';
 import { useParams, useRouter } from 'next/navigation';
 
 import { getAdminCustomerDetail } from '@/apis/customer';
-import { fetchTransactionHistory } from '@/apis/transactions';
+import { fetchTransactionHistory, TransactionHistory } from '@/apis/transactions';
 import { TitleRow, Total } from '@/components/admin/Conditionbar/Conditionbar.style';
-import DataTable from '@/components/admin/DataTable/DataTable';
-import ErrorBlock from '@/components/admin/ErrorBlock/ErrorBlock';
-import InfoBlock from '@/components/admin/InfoBlock/InfoBlock';
 import {
   InfoContainer,
   InfoGrid,
@@ -33,45 +32,52 @@ import {
 
 import { PageContainer, ContentColumn, HeaderContainer, Title } from './page.style';
 
+const ErrorBlock = dynamic(() => import('@/components/admin/ErrorBlock/ErrorBlock'), {
+  ssr: false,
+  loading: () => null,
+});
+const InfoBlock = dynamic(() => import('@/components/admin/InfoBlock/InfoBlock'), {
+  ssr: false,
+  loading: () => null,
+});
+const DataTable = dynamic(() => import('@/components/admin/DataTable/DataTable'), {
+  ssr: false,
+  loading: () => null,
+});
+
+/**
+ * 고객 상세 조회 페이지 (BFF 쿠키 기반)
+ */
 const CustomerDetailPage = () => {
   const params = useParams();
   const router = useRouter();
   const memberId = params.userId as string;
+
   const [currentPage, setCurrentPage] = useState(0);
   const PAGE_SIZE = 4;
-  const [accessToken, setAccessToken] = useState<string | null>(null);
 
-  useEffect(() => {
-    const accessToken = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
-    if (!accessToken) {
-      router.replace('/admin/not-found');
-    } else {
-      setAccessToken(accessToken);
-    }
-  }, [router]);
-
+  /** 고객 기본 정보 */
   const {
     data: customerData,
     isLoading: customerLoading,
     error: customerError,
   } = useQuery({
     queryKey: ['customerDetail', memberId],
-    queryFn: () => getAdminCustomerDetail(memberId, accessToken),
-    enabled: !!accessToken,
+    queryFn: () => getAdminCustomerDetail(memberId),
   });
 
+  /** 거래 내역 */
   const { data: transactionData, isLoading: transactionLoading } = useQuery({
     queryKey: ['transactionHistory', memberId, currentPage],
-    queryFn: () => fetchTransactionHistory(memberId, accessToken, currentPage, PAGE_SIZE),
-    enabled: !!accessToken && !!customerData?.hasLoan,
-    placeholderData: (previousData) => previousData,
-    staleTime: 1000 * 60,
+    queryFn: () => fetchTransactionHistory(memberId, currentPage, PAGE_SIZE),
+    enabled: !!customerData?.hasLoan,
+    placeholderData: (prev) => prev,
+    staleTime: 60_000,
   });
 
-  const handleGoBack = () => {
-    router.back();
-  };
+  const handleGoBack = () => router.back();
 
+  /** 거래내역 컬럼 정의 */
   const transactionColumns = [
     { title: '거래 내역 ID', dataIndex: 'transactionId', key: 'transactionId', width: 120 },
     { title: '대출 신청 ID', dataIndex: 'applicationId', key: 'applicationId', width: 120 },
@@ -82,24 +88,16 @@ const CustomerDetailPage = () => {
     { title: '상태', dataIndex: 'status', key: 'status', width: 100 },
   ];
 
-  interface Transaction {
-    transactionId: string;
-    applicationId: string;
-    memberId: string;
-    type: string;
-    amount: number;
-    occurredAt: string;
-    status: string;
-  }
-
-  const transactionTableData = customerData?.hasLoan
-    ? transactionData?.transactionHistories?.map((transaction: Transaction) => ({
-        ...transaction,
-        key: transaction.transactionId,
-        userId: transaction.memberId,
-        formattedDate: dayjs(transaction.occurredAt).format('YYYY-MM-DD'),
-      })) || []
-    : [];
+  /** 거래내역 데이터 */
+  const transactionTableData =
+    customerData?.hasLoan && transactionData
+      ? transactionData.transactionHistories.map((t: TransactionHistory) => ({
+          ...t,
+          key: t.transactionId,
+          userId: Number(t.memberId),
+          formattedDate: dayjs(t.occurredAt).format('YYYY-MM-DD'),
+        }))
+      : [];
 
   const showPagination = transactionTableData.length > 0 && transactionData?.paginationInfo;
 
@@ -113,6 +111,7 @@ const CustomerDetailPage = () => {
       }
     : undefined;
 
+  /** 로딩 */
   if (customerLoading) {
     return (
       <PageContainer>
@@ -130,6 +129,7 @@ const CustomerDetailPage = () => {
     );
   }
 
+  /** 에러 처리 */
   if (customerError || !customerData) {
     return (
       <PageContainer>
@@ -148,7 +148,7 @@ const CustomerDetailPage = () => {
           <Title>고객 상세 조회</Title>
         </HeaderContainer>
 
-        {/* 고객 기본 정보 블록 */}
+        {/* 고객 기본 정보 */}
         <InfoBlock>
           <InfoGrid columns={6}>
             <InfoItem>
@@ -177,8 +177,9 @@ const CustomerDetailPage = () => {
             </InfoItem>
           </InfoGrid>
         </InfoBlock>
+
         <div style={{ display: 'flex', gap: '32px' }}>
-          {/* 고객 소비 성향 정보 블록 */}
+          {/* 소비 성향 정보 */}
           <div
             style={{
               flex: customerData.hasLoan ? '0 0 500px' : '1',
@@ -200,7 +201,8 @@ const CustomerDetailPage = () => {
               </InfoContainer>
             </InfoBlock>
           </div>
-          {/* 대출 정보 블록 */}
+
+          {/* 대출 정보 */}
           {customerData.hasLoan && (
             <div style={{ flex: 1 }}>
               <InfoBlock>
