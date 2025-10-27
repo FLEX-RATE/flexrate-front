@@ -14,7 +14,6 @@ import Space from 'antd/es/space';
 import { isAxiosError } from 'axios';
 import dayjs from 'dayjs';
 import dynamic from 'next/dynamic';
-import { useRouter } from 'next/navigation';
 
 import { getLoanApplicationDetail } from '@/apis/admin';
 import { SubContainer } from '@/app/mypage/page.style';
@@ -151,7 +150,6 @@ type ChangeableStatus = (typeof CHANGEABLE_STATUSES)[number];
  */
 const AdminLoanApplicationPage = () => {
   const { RangePicker } = DatePicker;
-  const router = useRouter();
   const queryClient = useQueryClient();
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [statusChangeForm] = Form.useForm();

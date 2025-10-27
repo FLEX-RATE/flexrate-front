@@ -3,7 +3,9 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { css, cx } from '@emotion/css';
-import { Table, Pagination, Form } from 'antd';
+import Form from 'antd/es/form';
+import Pagination from 'antd/es/pagination';
+import Table from 'antd/es/table';
 import dayjs from 'dayjs';
 import { useRouter } from 'next/navigation';
 
@@ -47,7 +49,7 @@ interface DataTableProps<
     isEmpty?: boolean;
     userId?: number;
     handleChange?: (value: string, dataIndex?: string, record?: T) => void;
-  },
+  }
 > {
   data: T[];
   loading: boolean;
@@ -80,7 +82,7 @@ const DataTable = <
     isEmpty?: boolean;
     userId: number;
     handleChange?: (value: string, dataIndex?: string, record?: T) => void;
-  } & Record<string, unknown>,
+  } & Record<string, unknown>
 >({
   data,
   loading,

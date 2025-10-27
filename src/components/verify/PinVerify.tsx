@@ -31,11 +31,10 @@ const shuffleArray = (array: number[]) => {
 
 const PinVerify = () => {
   const router = useRouter();
-  const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') ?? '' : '';
 
   const { funnelContext } = useLoanFunnelStore();
 
-  const { mutate: applyLoan } = usePostLoanApplication(token);
+  const { mutate: applyLoan } = usePostLoanApplication();
 
   const [pin, setPin] = useState<string[]>(Array(PIN_LENGTH).fill(''));
   const [loading, setLoading] = useState(false);
@@ -108,27 +107,22 @@ const PinVerify = () => {
         ))}
       </DotWrapper>
 
-    <KeypadWrapper>
-      {shuffledNumbers.map((num) => (
-        <KeyButton key={num} onClick={() => handleKeyClick(num.toString())} disabled={loading}>
-          {num}
+      <KeypadWrapper>
+        {shuffledNumbers.map((num) => (
+          <KeyButton key={num} onClick={() => handleKeyClick(num.toString())} disabled={loading}>
+            {num}
+          </KeyButton>
+        ))}
+        <KeyButton onClick={() => handleKeyClick('reset')} disabled={loading}>
+          전체삭제
         </KeyButton>
-      ))}
-      <KeyButton onClick={() => handleKeyClick('reset')} disabled={loading}>
-        전체삭제
-      </KeyButton>
-      <KeyButton onClick={() => handleKeyClick('0')} disabled={loading}>
-        0
-      </KeyButton>
-      <KeyButton onClick={() => handleKeyClick('del')} disabled={loading}>
-        <Image
-          src={'/icons/deletePad.svg'}
-          alt="삭제하기"
-          width={27}
-          height={20}
-        />
-      </KeyButton>
-    </KeypadWrapper>
+        <KeyButton onClick={() => handleKeyClick('0')} disabled={loading}>
+          0
+        </KeyButton>
+        <KeyButton onClick={() => handleKeyClick('del')} disabled={loading}>
+          <Image src={'/icons/deletePad.svg'} alt="삭제하기" width={27} height={20} />
+        </KeyButton>
+      </KeypadWrapper>
     </Container>
   );
 };

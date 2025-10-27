@@ -1,7 +1,12 @@
+'use client';
+
 import type { ReactNode, TdHTMLAttributes } from 'react';
 
-import { Input, Select, DatePicker, Form } from 'antd';
 import type { SelectProps } from 'antd';
+import DatePicker from 'antd/es/date-picker';
+import Form from 'antd/es/form';
+import Input from 'antd/es/input';
+import Select from 'antd/es/select';
 
 type EditableCellProps = {
   title: string;
@@ -41,11 +46,11 @@ const EditableCell = ({
   handleChange,
   ...restProps
 }: EditableCellProps) => {
-
   // 상태 컬럼일 시 select 대신 클릭만 처리
   if (dataIndex === 'status') {
     return (
-      <td {...restProps}
+      <td
+        {...restProps}
         style={{ cursor: 'pointer', textAlign: 'center' }}
         onClick={() => {
           handleChange(record.status as string, dataIndex, record);

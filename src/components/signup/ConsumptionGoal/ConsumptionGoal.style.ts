@@ -8,7 +8,8 @@ export const Options = styled.div`
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  margin-top: 32px;
+  margin-top: 42px;
+  gap: 12px;
 `;
 
 export const GoalOptionButton = styled.button<{ selected: boolean }>`

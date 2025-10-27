@@ -49,8 +49,7 @@ interface ReviewResultProps {
 }
 
 const ReviewResultAndLoanApplication = ({ value, onChange, onSubmit }: ReviewResultProps) => {
-  const token = typeof window !== undefined ? localStorage.getItem('accessToken') ?? '' : '';
-  const { data: result, isLoading } = useGetLoanReivewApplication(token);
+  const { data: result, isLoading } = useGetLoanReivewApplication();
 
   const showSkeleton = useDelayedLoading(isLoading, 2000);
 

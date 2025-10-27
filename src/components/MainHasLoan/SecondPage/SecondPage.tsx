@@ -1,4 +1,4 @@
-import Image from 'next/image';
+'use client';
 
 import LoanDashboard from '@/components/main/LoanDashboard/LoanDashboard';
 import { useMainFirstPage } from '@/hooks/useMainFirstPage';
@@ -26,6 +26,7 @@ import {
 const SecondPage = () => {
   const { interestCurrent } = useMainFirstPage();
   const { mainData } = useMainSecondPage();
+
   const nextDate = mainData?.nextPaymentDate
     ? new Date(mainData.nextPaymentDate).toISOString().slice(0, 10)
     : undefined;
@@ -51,30 +52,33 @@ const SecondPage = () => {
       <Wrapper>
         <BgContainer color="white">
           <LoanDashboard mainData={mainData} currentRate={interestCurrent?.currentRate ?? 0} />
+
           <CardFlexContainer>
             <Card color="gray">
               <MediumTitleWrapper>
-                <MediumTitle $isStrong={true}>
+                <MediumTitle $isStrong>
                   {nextRepaymentYear}
                   <MediumTitle>년</MediumTitle>
                 </MediumTitle>
                 <br />
-                <MediumTitle $isStrong={true}>
+                <MediumTitle $isStrong>
                   {nextRepaymentMonth}
                   <MediumTitle>월</MediumTitle>
                 </MediumTitle>
-                <MediumTitle $isStrong={true}>
+                <MediumTitle $isStrong>
                   {nextRepaymentDay}
                   <MediumTitle>일</MediumTitle>
                 </MediumTitle>
               </MediumTitleWrapper>
               <CardContentContainer>
                 <SubTitle>
-                  이번 달<br />
+                  이번 달
+                  <br />
                   대출금 상환 일자
                 </SubTitle>
               </CardContentContainer>
             </Card>
+
             <Card color="gray">
               <CardTitle>
                 0<SmallTitle>회차</SmallTitle>
@@ -86,20 +90,21 @@ const SecondPage = () => {
             </Card>
           </CardFlexContainer>
         </BgContainer>
+
         <BgContainer color="gray">
           <GridContainer>
             <Card>
               <MediumTitleWrapper>
-                <MediumTitle $isStrong={true}>
+                <MediumTitle $isStrong>
                   {startYear}
                   <MediumTitle>년</MediumTitle>
                 </MediumTitle>
                 <br />
-                <MediumTitle $isStrong={true}>
+                <MediumTitle $isStrong>
                   {startMonth}
                   <MediumTitle>월</MediumTitle>
                 </MediumTitle>
-                <MediumTitle $isStrong={true}>
+                <MediumTitle $isStrong>
                   {startDay}
                   <MediumTitle>일</MediumTitle>
                 </MediumTitle>
@@ -108,6 +113,7 @@ const SecondPage = () => {
                 <SubTitle>대출 시작일</SubTitle>
               </CardContentContainer>
             </Card>
+
             <Card>
               <CardTitle>
                 {mainData?.loanRepaymentTransactionNum}
