@@ -5,17 +5,6 @@ import { useCallback, useRef, useState } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 
-import {
-  EmptyIcon,
-  EmptyState,
-  EmptyText,
-  MainContainer,
-  NotificationList,
-  TopSection,
-  Wrapper,
-  LoadingSpinner,
-  ErrorMessage,
-} from '@/app/notifications/page.style';
 import Button from '@/components/Button/Button';
 import Header from '@/components/Header/Header';
 import Modal from '@/components/Modal/Modal';
@@ -31,14 +20,25 @@ import { ChangeBtn } from '@/components/TextField/TextField.style';
 import { useNotifications } from '@/hooks/useNotifications';
 import { formatNotificationTime } from '@/utils/notificationDate';
 
+import {
+  Wrapper,
+  TopSection,
+  MainContainer,
+  NotificationList,
+  EmptyState,
+  EmptyIcon,
+  EmptyText,
+  LoadingSpinner,
+  ErrorMessage,
+} from './page.style';
+
 const NotificationPage = () => {
   const router = useRouter();
   const { notifications, loading, hasNext, error, loadMore, markAsRead, deleteAll, refresh } =
     useNotifications();
 
-  const observerRef = useRef<IntersectionObserver>();
   const user = true;
-
+  const observerRef = useRef<IntersectionObserver>();
   const [isDeleteModalOpen, setDeleteModalOpen] = useState(false);
 
   const lastNotificationElementRef = useCallback(
@@ -62,9 +62,7 @@ const NotificationPage = () => {
     setDeleteModalOpen(true);
   };
 
-  const closeDeleteModal = () => {
-    setDeleteModalOpen(false);
-  };
+  const closeDeleteModal = () => setDeleteModalOpen(false);
 
   const handleConfirmDelete = async () => {
     await deleteAll();
@@ -103,18 +101,17 @@ const NotificationPage = () => {
         )}
 
         <NotificationList>
-          {notifications.map((notification, index) => {
-            const isLast = index === notifications.length - 1;
-
+          {notifications.map((n, i) => {
+            const isLast = i === notifications.length - 1;
             return (
-              <div key={notification.id} ref={isLast ? lastNotificationElementRef : null}>
+              <div key={n.id} ref={isLast ? lastNotificationElementRef : null}>
                 <NotificationItem
-                  id={notification.id}
-                  message={notification.content}
-                  time={formatNotificationTime(notification.sentAt)}
-                  isRead={notification.isRead}
+                  id={n.id}
+                  message={n.content}
+                  time={formatNotificationTime(n.sentAt)}
+                  isRead={n.isRead}
                   onClick={handleNotificationClick}
-                  delay={index * 0.1}
+                  delay={i * 0.1}
                 />
               </div>
             );
@@ -127,15 +124,16 @@ const NotificationPage = () => {
           </LoadingSpinner>
         )}
 
-        {notifications.length === 0 && !loading && !error && (
+        {!loading && notifications.length === 0 && !error && (
           <EmptyState>
             <EmptyIcon>
               <Image
-                src={'/icons/alert_24.svg'}
+                src="/icons/alert_24.svg"
                 width={48}
                 height={48}
                 alt="알림이 없습니다"
                 style={{ opacity: 0.3 }}
+                priority
               />
             </EmptyIcon>
             <EmptyText>알림이 없습니다</EmptyText>
@@ -159,8 +157,8 @@ const NotificationPage = () => {
           </TitleContainer>
 
           <ModalBtnContainer>
-            <Button varient="TERTIARY" onClick={closeDeleteModal} text={'안할래요'} />
-            <Button varient="PRIMARY" onClick={handleConfirmDelete} text={'전체 삭제할게요'} />
+            <Button varient="TERTIARY" onClick={closeDeleteModal} text="안할래요" />
+            <Button varient="PRIMARY" onClick={handleConfirmDelete} text="전체 삭제할게요" />
           </ModalBtnContainer>
         </ModalFlexContainer>
       </Modal>
