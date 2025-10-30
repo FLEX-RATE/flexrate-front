@@ -1,4 +1,6 @@
-import { useMemo, useState } from 'react';
+'use client';
+
+import { startTransition, useMemo, useState } from 'react';
 
 import type { ApexOptions } from 'apexcharts';
 import dynamic from 'next/dynamic';
@@ -17,7 +19,10 @@ import {
   PeriodBtn,
 } from './AreaChart.style';
 
-const ApexChart = dynamic(() => import('react-apexcharts'), { ssr: false });
+const ApexChart = dynamic(() => import('react-apexcharts'), {
+  ssr: false,
+  loading: () => <div style={{ height: 180 }} />,
+});
 
 const cleanCSS = (css: string) => css.replace(/\s+/g, ' ').trim();
 
@@ -25,20 +30,24 @@ const AreaChart = () => {
   const [periodType, setPeriodType] = useState<PeriodKey>('DAILY');
   const { data } = useInterestStats(periodType);
 
-  const series: ApexAxisChartSeries = [
-    {
-      name: '금리',
-      data:
-        data?.rates.map((item) => ({
-          x: formatPeriodLabel(item.period, periodType),
-          y: item.averageRate,
-        })) ?? [],
-    },
-  ];
+  const series = useMemo(
+    () => [
+      {
+        name: '금리',
+        data:
+          data?.rates.map((item) => ({
+            x: formatPeriodLabel(item.period, periodType),
+            y: item.averageRate,
+          })) ?? [],
+      },
+    ],
+    [data, periodType]
+  );
 
-  const categories = useMemo(() => {
-    return data?.rates.map((d) => formatPeriodLabel(d.period, periodType)) ?? [];
-  }, [data, periodType]);
+  const categories = useMemo(
+    () => data?.rates.map((d) => formatPeriodLabel(d.period, periodType)) ?? [],
+    [data, periodType]
+  );
 
   const getCompareText = (type: PeriodKey): string => {
     switch (type) {
@@ -54,7 +63,7 @@ const AreaChart = () => {
   };
 
   const chartOptions: ApexOptions = useMemo(() => {
-    const isSingleData = data?.rates.length === 1;
+    const isSingleData = (data?.rates.length ?? 0) === 1;
 
     return {
       chart: {
@@ -70,17 +79,20 @@ const AreaChart = () => {
         events: {
           zoomed: (_chartContext, { xaxis }) => {
             if (xaxis?.max == null || xaxis?.min == null) return;
-
             const rangeDays = (xaxis.max - xaxis.min) / (1000 * 60 * 60 * 24);
             const maxRange = PERIOD_TYPES[periodType].maxRangeInDays;
 
             if (rangeDays > maxRange) {
-              ApexCharts.exec('interest-chart', 'resetZoom');
+              if (window.ApexCharts) {
+                window.ApexCharts.exec('interest-chart', 'resetZoom');
+              }
               alert(`${PERIOD_TYPES[periodType].label} 범위까지만 확대할 수 있어요`);
             } else {
-              if (rangeDays <= 7) setPeriodType('DAILY');
-              else if (rangeDays <= 28) setPeriodType('WEEKLY');
-              else setPeriodType('MONTHLY');
+              startTransition(() => {
+                if (rangeDays <= 7) setPeriodType('DAILY');
+                else if (rangeDays <= 28) setPeriodType('WEEKLY');
+                else setPeriodType('MONTHLY');
+              });
             }
           },
         },
@@ -112,6 +124,7 @@ const AreaChart = () => {
         width: 2,
         colors: [semanticColor.bg.primary],
       },
+
       fill: {
         type: 'gradient',
         gradient: {
@@ -121,6 +134,7 @@ const AreaChart = () => {
           stops: [0, 100],
         },
       },
+
       grid: { show: false },
       dataLabels: { enabled: false },
       yaxis: { labels: { show: false } },
@@ -128,10 +142,7 @@ const AreaChart = () => {
         type: 'category',
         categories,
         crosshairs: { show: false },
-        labels: {
-          rotate: -45,
-          style: { fontSize: '10px' },
-        },
+        labels: { rotate: -45, style: { fontSize: '10px' } },
         tickAmount: 6,
         tooltip: { enabled: false },
       },
@@ -152,22 +163,21 @@ const AreaChart = () => {
           const formattedValue = value.toFixed(1);
 
           return `
-        <div style="padding: 10px; border-radius: 15px; background: ${
-          semanticColor.card.card1
-        }; width: 137px;">
-          <div style="${cleanCSS(typoStyleMap['title2'])}; color: ${
+            <div style="padding:10px;border-radius:15px;background:${
+              semanticColor.card.card1
+            };width:137px;">
+              <div style="${cleanCSS(typoStyleMap['title2'])};color:${
             semanticColor.text.normal.primary
           };">
-            ${formattedValue}<span style="${cleanCSS(typoStyleMap['caption3_b'])}; color: ${
+                ${formattedValue}<span style="${cleanCSS(typoStyleMap['caption3_b'])};color:${
             semanticColor.text.normal.primary
           };">%</span>
-          </div>
-          <div style="font-size: 12px; color: #9CA3AF; margin-top: 4px;">${periodLabel}</div>
-          <div style="font-size: 13px; margin-top: 4px; color: #4B5563;">
-            ${compareText} <span style="color: #10B981; font-weight: 600; margin-left: 4px;">▲ ${formattedPercent}%</span>
-          </div>
-        </div>
-      `;
+              </div>
+              <div style="font-size:12px;color:#9CA3AF;margin-top:4px;">${periodLabel}</div>
+              <div style="font-size:13px;margin-top:4px;color:#4B5563;">
+                ${compareText} <span style="color:#10B981;font-weight:600;margin-left:4px;">▲ ${formattedPercent}%</span>
+              </div>
+            </div>`;
         },
       },
     };
@@ -182,9 +192,7 @@ const AreaChart = () => {
             <PeriodBtn
               key={key}
               btnKey={key as PeriodKey}
-              onClick={() => {
-                setPeriodType(key as PeriodKey);
-              }}
+              onClick={() => startTransition(() => setPeriodType(key as PeriodKey))}
               periodType={periodType}
             >
               {label}
@@ -192,6 +200,7 @@ const AreaChart = () => {
           ))}
         </ChartBtnContainer>
       </ChartHeader>
+
       <ApexChart key={periodType} options={chartOptions} series={series} type="area" height={180} />
     </ChartContainer>
   );

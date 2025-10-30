@@ -1,106 +1,87 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
-import dynamic from 'next/dynamic';
+import type { ApexOptions } from 'apexcharts';
+
+import { ReactApexChart } from '../charts/ApexClient';
 
 import { ChartOverlay, KCBLabel, Percentile, Score, Wrapper } from './CircularChart.style';
 
-const ApexChart = dynamic(() => import('react-apexcharts'), { ssr: false });
-
-interface CircularChartProps {
+interface Props {
   loading?: boolean;
   score: number;
   rank: number;
 }
 
-const CircularChart = ({ loading = false, score, rank }: CircularChartProps) => {
-  const [displaySeries, setDisplaySeries] = useState<number[]>([0]);
+const clamp = (n: number, min = 0, max = 100) => Math.min(max, Math.max(min, n));
 
+const CircularChart = ({ loading = false, score, rank }: Props) => {
+  const targetPercent = useMemo(() => clamp((score / 1000) * 100), [score]);
+
+  const [reduced, setReduced] = useState(false);
   useEffect(() => {
-    if (!loading) {
-      let current = 0;
-      const interval = setInterval(() => {
-        current += 2;
-        if (current >= (score / 1000) * 100) {
-          current = (score / 1000) * 100;
-          clearInterval(interval);
-        }
-        setDisplaySeries([current]);
-      }, 16);
-    } else {
-      setDisplaySeries([100]);
-    }
-  }, [loading, score]);
+    if (typeof window === 'undefined' || !window.matchMedia) return;
+    const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const apply = (e: MediaQueryList | MediaQueryListEvent) => setReduced(!!e.matches);
+    apply(mq);
+    const handler = (e: MediaQueryListEvent) => apply(e);
+    mq.addEventListener?.('change', handler);
+    mq.addListener?.(handler);
+    return () => {
+      mq.removeEventListener?.('change', handler);
+      mq.removeListener?.(handler);
+    };
+  }, []);
 
-  const options: ApexCharts.ApexOptions = {
-    chart: {
-      width: 300,
-      height: 300,
-      type: 'radialBar',
-      animations: {
-        enabled: true,
-        speed: loading ? 1800 : 600,
-      },
-    },
-    plotOptions: {
-      radialBar: {
-        hollow: {
-          size: '84%',
-        },
-        track: {
-          strokeWidth: '100%',
-        },
-        dataLabels: {
-          show: false,
-          name: {
-            offsetY: -50,
-            show: true,
-            color: '#888',
-            fontSize: '13px',
-          },
-          value: {
-            color: '#111',
-            fontSize: '30px',
-            show: true,
-          },
+  const [series, setSeries] = useState<number[]>([0]);
+  useEffect(() => {
+    if (loading) {
+      setSeries([0]);
+    } else {
+      setSeries([targetPercent]);
+    }
+  }, [loading, targetPercent]);
+
+  const options: ApexOptions = useMemo(
+    () => ({
+      chart: {
+        type: 'radialBar',
+        toolbar: { show: false },
+        animations: {
+          enabled: !reduced,
+          speed: loading ? 1800 : 600,
+          animateGradually: { enabled: false },
+          dynamicAnimation: { enabled: true, speed: loading ? 1800 : 600 },
         },
       },
-    },
-    stroke: {
-      lineCap: 'round',
-    },
-    labels: ['KCB'],
-  };
+      plotOptions: {
+        radialBar: {
+          hollow: { size: '84%' },
+          track: { strokeWidth: '100%' },
+          dataLabels: { show: false },
+        },
+      },
+      stroke: { lineCap: 'round' },
+      labels: ['KCB'],
+    }),
+    [loading, reduced]
+  );
 
   return (
     <Wrapper
-      animate={
-        loading
-          ? {
-              opacity: [1, 0.4, 1],
-            }
-          : {
-              opacity: 1,
-            }
-      }
+      animate={loading ? { opacity: [1, 0.4, 1] } : { opacity: 1 }}
       transition={
-        loading
-          ? {
-              duration: 1.2,
-              repeat: Infinity,
-              ease: 'easeInOut',
-            }
-          : { duration: 0.3 }
+        loading ? { duration: 1.2, repeat: Infinity, ease: 'easeInOut' } : { duration: 0.3 }
       }
     >
-      <ApexChart options={options} series={displaySeries} type="radialBar" height={280} />
+      <ReactApexChart options={options} series={series} type="radialBar" height={280} />
       <ChartOverlay>
         <KCBLabel>KCB</KCBLabel>
         <Score>
           {!loading && (
             <>
-              <Score strong={true}>{score}</Score>점
+              <Score strong>{score}</Score>점
             </>
           )}
         </Score>
