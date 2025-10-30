@@ -1,7 +1,8 @@
+'use client';
+
 import Image from 'next/image';
 
 import Logo from '@/assets/img/logo(blue).png';
-import { useInitUser } from '@/hooks/useInitUser';
 import { useLogout } from '@/hooks/useLogout';
 import { useUserStore } from '@/stores/userStore';
 
@@ -15,23 +16,18 @@ import {
 } from './Header.style';
 
 const Header = () => {
-  useInitUser();
-  const user = useUserStore((state) => state.user);
-  const { mutate: logoutMutate } = useLogout();
-
-  const handleLogout = () => {
-    logoutMutate();
-  };
+  const user = useUserStore((s) => s.user);
+  const { mutate: logout } = useLogout();
 
   return (
     <HeaderWrapper>
       <LogoContainer>
-        <Image src={Logo} alt="FlexRate Logo" width={120} height={40} />
+        <Image src={Logo} alt="FlexRate Logo" width={120} height={40} priority />
         <LogoSmallText>Admin</LogoSmallText>
       </LogoContainer>
       <HeaderRightContainer>
-        <LogoutBtn onClick={handleLogout}>로그아웃</LogoutBtn>
-        {user ? <EmailBox>{user?.email}</EmailBox> : <></>}
+        <LogoutBtn onClick={() => logout()}>로그아웃</LogoutBtn>
+        {user?.email && <EmailBox>{user.email}</EmailBox>}
       </HeaderRightContainer>
     </HeaderWrapper>
   );

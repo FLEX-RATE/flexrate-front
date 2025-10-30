@@ -1,7 +1,8 @@
+'use client';
+
 import { usePathname, useRouter } from 'next/navigation';
 
 import ProfileIcon from '@/assets/icons/profile_24.svg';
-import { useInitUser } from '@/hooks/useInitUser';
 import { useUserStore } from '@/stores/userStore';
 
 import {
@@ -19,23 +20,9 @@ import {
   MenuSectionWrapper,
 } from './Sidebar.style';
 
-/**
- * 관리자 페이지 메뉴 타입
- */
-type MenuItemType = {
-  label: string;
-  path: string;
-  match: (pathname: string) => boolean;
-};
+type MenuItemType = { label: string; path: string; match: (p: string) => boolean };
+type MenuSectionType = { sectionTitle: string; items: MenuItemType[] };
 
-type MenuSectionType = {
-  sectionTitle: string;
-  items: MenuItemType[];
-};
-
-/**
- * 관리자 페이지 메뉴 섹션
- */
 const menuSections: MenuSectionType[] = [
   {
     sectionTitle: '관리',
@@ -43,7 +30,7 @@ const menuSections: MenuSectionType[] = [
       {
         label: '고객 관리',
         path: '/admin/customer-management',
-        match: (pathname: string) => pathname.startsWith('/admin/customer-management'),
+        match: (p) => p.startsWith('/admin/customer-management'),
       },
     ],
   },
@@ -53,16 +40,14 @@ const menuSections: MenuSectionType[] = [
       {
         label: '대출 신청 현황',
         path: '/admin/loan-application',
-        match: (pathname: string) => pathname === '/admin/loan-application',
+        match: (p) => p === '/admin/loan-application',
       },
     ],
   },
 ];
 
 const Sidebar = () => {
-  useInitUser();
-  const user = useUserStore((state) => state.user);
-
+  const user = useUserStore((s) => s.user);
   const pathname = usePathname();
   const router = useRouter();
 
@@ -74,15 +59,14 @@ const Sidebar = () => {
           <ProfileGreeting>
             {user ? (
               <>
-                <ProfileName>{user?.username}</ProfileName> 님, 반가워요!
+                <ProfileName>{user.username || '관리자'}</ProfileName> 님, 반가워요!
               </>
             ) : (
-              <ProfileName></ProfileName>
+              <ProfileName style={{ opacity: 0.4 }}>로딩중…</ProfileName>
             )}
           </ProfileGreeting>
         </ProfileBox>
         <SidebarHr />
-
         <MenuSectionWrapper>
           {menuSections.map((section) => (
             <MenuSection key={section.sectionTitle}>
