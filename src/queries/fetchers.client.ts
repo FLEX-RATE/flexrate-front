@@ -1,5 +1,9 @@
 import { fetchBFFClient, fetchBFFJsonClient } from '@/lib/fetch-bff-client';
-import type { InterestCurrentResponse, MainResponse } from '@/types/interest.type';
+import type {
+  InterestCurrentResponse,
+  InterestRateResponse,
+  MainResponse,
+} from '@/types/interest.type';
 
 import type { Me } from './types';
 
@@ -42,6 +46,8 @@ export async function fetchInterestCurrent(): Promise<InterestCurrentResponse | 
   return fetchBFFJsonClient<InterestCurrentResponse>('/loans/interest/current');
 }
 
-export async function fetchInterestStats(periodType: 'DAILY' | 'WEEKLY' | 'MONTHLY' = 'DAILY') {
-  return fetchBFFJsonClient(`/loans/interest/stats?periodType=${periodType}`);
+export async function fetchInterestStats(
+  periodType: 'DAILY' | 'WEEKLY' | 'MONTHLY' = 'DAILY'
+): Promise<InterestRateResponse | null> {
+  return fetchBFFJsonClient<InterestRateResponse>(`/loans/interest/stats?periodType=${periodType}`);
 }
