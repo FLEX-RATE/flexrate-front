@@ -11,15 +11,12 @@ import Header from '@/components/Header/Header';
 import { FlexContainer } from '@/components/loanApplicationFunnel/CreditStep/CreditStep.style';
 import { Container } from '@/components/loanApplicationFunnel/LoanApplicationFunnel.style';
 import TextField from '@/components/TextField/TextField';
-import { useInitUser } from '@/hooks/useInitUser';
-import { User, useUserStore } from '@/stores/userStore';
+import { useUserStore } from '@/stores/userStore';
 
 const EditPage = () => {
   const router = useRouter();
-
-  useInitUser();
-  const user: User | null = useUserStore((state) => state.user);
-  const setUser = useUserStore((state) => state.setUser);
+  const user = useUserStore((s) => s.user);
+  const setUser = useUserStore((s) => s.setUser);
 
   const [email, setEmail] = useState(() => {
     if (typeof window !== 'undefined') {
@@ -27,13 +24,6 @@ const EditPage = () => {
     }
     return user?.email || '';
   });
-
-  useEffect(() => {
-    const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
-    if (!token) {
-      router.replace('/not-found');
-    }
-  }, [router]);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -44,44 +34,43 @@ const EditPage = () => {
     }
   }, [user?.email]);
 
-  const handleBack = () => {
-    router.back();
-  };
-  const handleEmailEdit = () => router.push('/mypage/edit-email');
-  const handleSave = async () => {
-    const token = localStorage.getItem('accessToken');
-    if (!token) {
-      router.replace('/not-found');
-      return;
+  useEffect(() => {
+    if (user === null) {
+      router.replace('/auth/login');
     }
+  }, [user, router]);
 
-    patchEmailChange(token, email)
-      .then(() => {
-        const user = useUserStore.getState().user;
-        setUser(user ? { ...user, email } : null);
-      })
-      .catch((error) => {
-        console.error('Error updating email:', error);
-        alert('이메일 변경에 실패했습니다.');
-      })
-      .finally(() => {
-        if (typeof window !== 'undefined') {
-          sessionStorage.removeItem('pendingEmail');
-          router.push('/mypage');
-        }
-      });
+  const handleBack = () => router.back();
+  const handleEmailEdit = () => router.push('/mypage/edit-email');
+
+  const handleSave = async () => {
+    try {
+      await patchEmailChange(email);
+      const cur = useUserStore.getState().user;
+      setUser(cur ? { ...cur, email } : null);
+
+      if (typeof window !== 'undefined') {
+        sessionStorage.removeItem('pendingEmail');
+      }
+      router.push('/mypage');
+    } catch (err) {
+      console.error('Error updating email:', err);
+      alert('이메일 변경에 실패했습니다.');
+    }
   };
 
-  const isSaveEnabled = email && user?.email !== undefined && email !== user.email;
+  const isSaveEnabled = !!user && !!email && email !== user.email;
+
+  if (user === null) return null;
 
   return (
     <Wrapper>
-      <Header type="내 정보 변경" backIcon={true} onClickBackIcon={() => router.push('/')} />
+      <Header type="내 정보 변경" backIcon onClickBackIcon={() => router.push('/')} />
 
       <Container>
         <MainContainer>
           <SubContainer>
-            <TextField value={''} onChange={() => {}} isDisabled={true}>
+            <TextField value={''} onChange={() => {}} isDisabled>
               <TextField.Label>이름</TextField.Label>
               <TextField.TextFieldBox placeholder={user?.username} />
             </TextField>
@@ -91,7 +80,7 @@ const EditPage = () => {
             <TextField
               value={email}
               onChange={setEmail}
-              isDisabled={true}
+              isDisabled
               rightContent={{ type: 'CHANGE', onClick: handleEmailEdit }}
             >
               <TextField.Label>이메일</TextField.Label>
