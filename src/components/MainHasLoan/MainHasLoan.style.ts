@@ -10,8 +10,10 @@ export const SliderWrapper = styled.div`
 
 export const SlideContainer = styled.div<{ index: number }>`
   display: flex;
-  transition: transform 0.4s ease-in-out;
-  transform: translateX(${(props) => -props.index * 100}%);
+  width: 100%;
+  transition: transform 0.4s ease;
+  will-change: transform;
+  transform: translate3d(${({ index }) => -index * 100}%, 0, 0);
 `;
 
 export const Slide = styled.div`

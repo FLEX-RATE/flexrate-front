@@ -1,10 +1,11 @@
+'use client';
+
 import { useState } from 'react';
 
+import dynamic from 'next/dynamic';
 import Image from 'next/image';
 
-import { useInitUser } from '@/hooks/useInitUser';
 import { useSlideTouch } from '@/hooks/useSlideTouch';
-import { useUserStore } from '@/stores/userStore';
 
 import FirstPage from './FirstPage/FirstPage';
 import {
@@ -16,13 +17,16 @@ import {
   SlideContainer,
   SliderWrapper,
 } from './MainHasLoan.style';
-import SecondPage from './SecondPage/SecondPage';
+
+const SecondPage = dynamic(() => import('./SecondPage/SecondPage'), {
+  loading: () => null,
+  ssr: false,
+});
 
 const MainHasLoan = () => {
-  useInitUser();
-  const user = useUserStore((state) => state.user);
   const [index, setIndex] = useState(0);
   const totalSlides = 2;
+
   const {
     onTouchStart,
     onTouchMove,
@@ -37,7 +41,13 @@ const MainHasLoan = () => {
     <SliderWrapper data-testid="main-has-loan">
       <IndicatorWrapperWithButtons>
         <ArrowWrapper disabled={index === 0} onClick={() => index > 0 && setIndex(index - 1)}>
-          <Image src="/icons/left_slide_arrow.svg" alt="왼쪽 화살표" width={3.234} height={5.805} />
+          <Image
+            src="/icons/left_slide_arrow.svg"
+            alt="왼쪽 화살표"
+            width={3.234}
+            height={5.805}
+            priority
+          />
         </ArrowWrapper>
 
         <IndicatorWrapper>
@@ -55,6 +65,7 @@ const MainHasLoan = () => {
             alt="오른쪽 화살표"
             width={3.234}
             height={5.805}
+            priority
           />
         </ArrowWrapper>
       </IndicatorWrapperWithButtons>
@@ -70,9 +81,9 @@ const MainHasLoan = () => {
         onMouseLeave={onMouseLeave}
       >
         <Slide>
-          <FirstPage user={user} />
+          <FirstPage />
         </Slide>
-        <Slide>
+        <Slide aria-hidden={index !== 1}>
           <SecondPage />
         </Slide>
       </SlideContainer>
