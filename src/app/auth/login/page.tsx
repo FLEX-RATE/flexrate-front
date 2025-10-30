@@ -1,33 +1,16 @@
-'use client';
-import React, { useState } from 'react';
+import { cookies } from 'next/headers';
+import { redirect } from 'next/navigation';
 
-import Header from '@/components/Header/Header';
-import { Wrapper } from '@/components/loanApplicationFunnel/LoanApplicationFunnel.style';
-import LoginForm from '@/components/login/LoginForm/LoginForm';
-import LoginSelector from '@/components/login/LoginSelector/LoginSelector';
-import PinLogin from '@/components/login/PinLogin/PinLogin';
-type Step = 'selector' | 'form' | 'PinEmailVerification' | 'pin';
+import LoginPageClient from './_client.tsx/LoginPageClient';
 
-const LoginPage = () => {
-  const [step, setStep] = useState<Step>('selector');
+const LoginPageServer = async () => {
+  const accessToken = cookies().get('access_token')?.value;
 
-  return (
-    <Wrapper>
-      <Header backIcon />
-      {step === 'selector' && (
-        <LoginSelector
-          // onSelectPin={() => setStep('pin')}
-          onSelectFace={() => {
-            // Face ID 로직
-          }}
-          onSelectPassword={() => setStep('form')}
-        />
-      )}
-      {step === 'form' && <LoginForm />}
-      {/* 
-      {step === 'pin' && <PinLogin />} */}
-    </Wrapper>
-  );
+  if (accessToken) {
+    redirect('/');
+  }
+
+  return <LoginPageClient />;
 };
 
-export default LoginPage;
+export default LoginPageServer;
