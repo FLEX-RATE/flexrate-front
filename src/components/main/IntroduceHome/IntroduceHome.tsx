@@ -36,35 +36,36 @@ import {
   Wrapper,
 } from './IntroduceHome.style';
 
-const PRODUCT_ID = 1; // 임시 상품 ID
+const PRODUCT_ID = 1;
 
 const IntroduceHome = () => {
-  const user = useUserStore((state) => state.user);
-  const setUser = useUserStore((state) => state.setUser);
+  const user = useUserStore((s) => s.user);
+  const setUser = useUserStore((s) => s.setUser);
+  const isLoggedIn = !!user;
 
   const { mutate } = useSelectLoanProduct();
   const router = useRouter();
-
-  const isLoggedIn = !!user;
   const [modalType, setModalType] = useState<'NONE_CREDIT' | 'PRE_APPLIED' | null>(null);
 
-  const { data: creditData, isSuccess: creditSuccess } = useCreditStatus();
-  const { data: loanStatusData, isSuccess: loanSuccess } = useLoanStatus();
+  const { data: creditData, isSuccess: creditOk } = useCreditStatus(isLoggedIn);
+  const { data: loanStatusData, isSuccess: loanOk } = useLoanStatus(isLoggedIn);
 
   useEffect(() => {
-    if (creditSuccess && loanSuccess && user) {
-      setUser({
-        ...user,
-        hasCreditScore: creditData.creditScoreStatus,
-        recentLoanStatus: loanStatusData,
-      });
-    }
-  }, [creditData, loanStatusData]);
+    if (!isLoggedIn || !creditOk || !loanOk || !user) return;
+    setUser({
+      ...user,
+      hasCreditScore: creditData!.creditScoreStatus,
+      recentLoanStatus: loanStatusData!,
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLoggedIn, creditOk, loanOk, creditData, loanStatusData]);
 
   const handleLoanApplyClick = () => {
     if (!isLoggedIn) {
       router.push('/auth/login');
-    } else if (!user?.hasCreditScore) {
+      return;
+    }
+    if (!user?.hasCreditScore) {
       setModalType('NONE_CREDIT');
     } else if (user?.recentLoanStatus === 'NONE') {
       mutate(PRODUCT_ID);
@@ -139,9 +140,7 @@ const IntroduceHome = () => {
                 size="M"
                 text="안할래요"
                 varient="TERTIARY"
-                onClick={() => {
-                  setModalType(null);
-                }}
+                onClick={() => setModalType(null)}
               />
               <Button
                 text="새로 신청할게요"
@@ -158,11 +157,7 @@ const IntroduceHome = () => {
         {modalType === 'NONE_CREDIT' && (
           <>
             <TitleContainer>
-              <ModalTitle>
-                아직 신용 점수를
-                <br />
-                한번도 평가 받지 않았어요
-              </ModalTitle>
+              <ModalTitle>아직 신용 점수를{'\n'}한번도 평가 받지 않았어요</ModalTitle>
               <ModalSubTitle>대출 신청 전에 신용 점수를 평가 받아야해요</ModalSubTitle>
             </TitleContainer>
             <ModalBtnContainer>
