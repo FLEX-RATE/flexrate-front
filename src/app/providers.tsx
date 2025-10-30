@@ -1,11 +1,30 @@
 'use client';
-
-import { ReactNode, useState } from 'react';
+import { ReactNode, useLayoutEffect, useState } from 'react';
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
-export const Providers = ({ children }: { children: ReactNode }) => {
-  const [queryClient] = useState(() => new QueryClient());
+import { useUserStore, type User } from '@/stores/userStore';
 
-  return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
+const MeHydrator = ({ initialUser }: { initialUser?: User | null }) => {
+  const setUser = useUserStore((s) => s.setUser);
+  useLayoutEffect(() => {
+    if (typeof initialUser !== 'undefined') setUser(initialUser ?? null);
+  }, [initialUser, setUser]);
+  return null;
+};
+
+export const Providers = ({
+  children,
+  initialUser = null,
+}: {
+  children: ReactNode;
+  initialUser?: User | null;
+}) => {
+  const [qc] = useState(() => new QueryClient());
+  return (
+    <QueryClientProvider client={qc}>
+      <MeHydrator initialUser={initialUser} />
+      {children}
+    </QueryClientProvider>
+  );
 };
