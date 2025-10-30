@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { motion } from 'framer-motion';
@@ -31,7 +31,7 @@ type FormData = z.infer<typeof emailWithCodeSchema>;
 
 export const EmailStep = ({ value, onChange, onNext }: Props) => {
   const [timer, setTimer] = useState(0);
-  const [intervalId, setIntervalId] = useState<NodeJS.Timeout | null>(null);
+  const intervalIdRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const {
     control,
@@ -56,27 +56,35 @@ export const EmailStep = ({ value, onChange, onNext }: Props) => {
   const handleVerify = async () => {
     const isCodeValid = await trigger('code');
     if (!isCodeValid) return;
-
     verifyMutation.mutate({ email, code });
   };
 
+  const prevRef = useRef<{ email: string; code: string }>({ email, code });
   useEffect(() => {
-    onChange?.({ email, code });
-  }, [email, code]);
+    const prev = prevRef.current;
+    if (prev.email !== email || prev.code !== code) {
+      prevRef.current = { email, code };
+      onChange?.({ email, code });
+    }
+  }, [email, code, onChange]);
 
   useEffect(() => {
-    if (timer === 0 && intervalId) {
-      clearInterval(intervalId);
-      setIntervalId(null);
+    if (timer > 0 && !intervalIdRef.current) {
+      intervalIdRef.current = setInterval(() => {
+        setTimer((prev) => (prev > 0 ? prev - 1 : 0));
+      }, 1000);
+    }
+    if (timer === 0 && intervalIdRef.current) {
+      clearInterval(intervalIdRef.current);
+      intervalIdRef.current = null;
       alert('시간이 만료되었습니다. 재전송 버튼을 눌러 다시 인증을 진행해주세요.');
     }
-
-    if (timer > 0 && !intervalId) {
-      const id = setInterval(() => {
-        setTimer((prev) => prev - 1);
-      }, 1000);
-      setIntervalId(id);
-    }
+    return () => {
+      if (intervalIdRef.current) {
+        clearInterval(intervalIdRef.current);
+        intervalIdRef.current = null;
+      }
+    };
   }, [timer]);
 
   const formatTime = (sec: number) => {
@@ -95,7 +103,7 @@ export const EmailStep = ({ value, onChange, onNext }: Props) => {
   };
 
   return (
-    <form style={{ width: '100%' }} onSubmit={(e) => e.preventDefault()}>
+    <div style={{ width: '100%' }}>
       <MainContainer>
         <Title>새로운 이메일을 입력해주세요</Title>
         <FormContainer>
@@ -168,6 +176,6 @@ export const EmailStep = ({ value, onChange, onNext }: Props) => {
           )}
         </BtnContainer>
       </BtnWrapper>
-    </form>
+    </div>
   );
 };
